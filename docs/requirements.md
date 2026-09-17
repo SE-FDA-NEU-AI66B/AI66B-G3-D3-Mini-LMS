@@ -14,7 +14,177 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 
 ## 4. User stories
 
+**Summary table**
 
+| ID | Story | Priority | Points |
+|---|---|---|---|
+| US01 | Lecturer creates a quiz (MCQ + short answer) | P0 | 8 |
+| US02 | Student sees available quizzes | P0 | 3 |
+| US03 | Student takes a quiz with countdown timer | P0 | 5 |
+| US04 | Automatic grading + immediate score | P0 | 5 |
+| US05 | Student views past attempts | P1 | 3 |
+| US06 | Lecturer publishes / unpublishes a quiz | P1 | 3 |
+| US07 | Lecturer sees class statistics | P1 | 5 |
+| US08 | Lecturer sees per-question difficulty | P1 | 5 |
+| US09 | Lecturer manages student accounts | P1 | 5 |
+| US10 | Student reviews answers after release | P2 | 3 |
+
+
+### US01 — Lecturer creates a quiz · P0 · 8 points · Screen: `/instructor/quizzes/{id}/edit`
+
+> As a **lecturer**, I want to **create a quiz with multiple-choice and short-answer questions** so that **I can assess my class online**.
+
+**Acceptance criteria**
+- Given the lecturer enters the title `"Midterm Quiz"`, a time limit of `"30 minutes"`, and a due date of `"2026-10-10 23:59"`, When the lecturer saves, Then the quiz is created with status `Draft`.
+- Given the lecturer adds a question `"What is 2+2?"` with options `3, 4, 5, 6` and marks `4` as correct, When the lecturer saves, Then the question appears with exactly **4** options and exactly **1** marked correct.
+- Given the title field is empty, When the lecturer saves, Then the system shows `"Title is required"` and the quiz is not saved.
+
+**Tasks**
+- Quiz form UI (title, time limit, due date) — @Altimary
+- Question editor for MCQ + short-answer — @BuiDut
+- Persist quiz, questions, and accepted answers — @thangkaka26
+- Validation tests (empty title, no correct option, out-of-range limit) — @VizAnh
+
+---
+
+### US02 — Student sees available quizzes · P0 · 3 points · Screen: `/dashboard`
+
+> As a **student**, I want to **see the quizzes available to me with their due dates and time limits** so that **I know what to take and by when**.
+
+**Acceptance criteria**
+- Given **3** published quizzes are assigned to Minh's class, When Minh opens his dashboard, Then all **3** quizzes appear with title, due date, and time limit.
+- Given quiz `"Midterm Quiz"` is due on `"2026-10-10 23:59"` and has a **30-minute** limit, When the list is shown, Then the row displays exactly `"2026-10-10 23:59"` and `"30 min"`.
+- Given a quiz is still in `Draft` status, When Minh opens his dashboard, Then that quiz does not appear in the list.
+
+**Tasks**
+- Availability query (Published + before due date) — @thangkaka26
+- Dashboard quiz list UI — @Altimary
+- Visibility tests (draft hidden, due-date edge cases) — @VizAnh
+
+---
+
+### US03 — Student takes a quiz with countdown timer · P0 · 5 points · Screen: `/quiz/{id}/take`
+
+> As a **student**, I want to **take a quiz with a visible countdown timer** so that **I can manage my time and submit within the limit**.
+
+**Acceptance criteria**
+- Given a quiz has **10** questions and a **30-minute** limit, When Minh starts the quiz, Then the timer displays `"30:00"` and counts down every second.
+- Given the timer reaches `"00:00"`, When time expires, Then the quiz auto-submits and Minh sees `"Time is up."`
+- Given Minh has answered **4** of **10** questions, When he clicks Submit, Then the system asks for confirmation before submitting.
+
+**Tasks**
+- Quiz-taking UI (one question at a time) — @Altimary
+- Countdown timer + auto-submit at `00:00` — @VizAnh
+- Per-question answer persistence (resume support) — @thangkaka26
+- Timer, auto-submit, and resume tests — @BuiDut
+
+---
+
+### US04 — Automatic grading and immediate score · P0 · 5 points · Screen: `/quiz/{id}/result?attempt={n}` (result view)
+
+> As a **student**, I want **my quiz to be graded automatically the moment I submit** so that **I get my score without waiting**.
+
+**Acceptance criteria**
+- Given a quiz has **10** questions and Minh answers **8** correctly, When Minh submits, Then the system shows raw score `"8/10"` and percentage `"80.00%"`.
+- Given Minh submits, When grading finishes, Then the result appears within **2 seconds**.
+- Given Minh's short-answer is `"  Hà Nội "` with surrounding whitespace, and the accepted answer is `"Hà Nội"`, When grading runs, Then it is marked correct.
+
+**Tasks**
+- MCQ grader (exact match against marked option) — @Altimary
+- Short-answer normalizer (case-insensitive, whitespace-trimmed) — @BuiDut
+- Score + percentage renderer (2 decimal places) — @VizAnh
+- Grading unit tests (case, whitespace, wrong answer) — @thangkaka26
+
+---
+
+### US05 — Student views past attempts · P1 · 3 points · Screen: `/results`
+
+> As a **student**, I want to **see my past quiz attempts and scores** so that **I can track my progress over the semester**.
+
+**Acceptance criteria**
+- Given Minh has completed **4** quizzes, When he opens `My Results`, Then **4** rows appear with quiz title, date, and score.
+- Given Minh scored **8/10** on `"Midterm Quiz"`, When the row is shown, Then it displays `"8/10"` and `"80.00%"`.
+
+**Tasks**
+- Attempt history query (grouped by quiz) — @BuiDut
+- Results list UI — @Altimary
+- Formatting and empty-state tests — @thangkaka26
+
+---
+
+### US06 — Lecturer publishes / unpublishes a quiz · P1 · 3 points · Screen: `/instructor/quizzes`
+
+> As a **lecturer**, I want to **publish or unpublish a quiz** so that **I control exactly when students can access it**.
+
+**Acceptance criteria**
+- Given a `Draft` quiz, When Dr. Lan clicks Publish, Then the status changes to `Published` and the quiz appears in Minh's dashboard.
+- Given a `Published` quiz with **5** existing student attempts, When Dr. Lan unpublishes it, Then students can no longer start new attempts, but the **5** existing attempts remain accessible.
+
+**Tasks**
+- Publish / unpublish endpoint — @thangkaka26
+- Status badge and toggle UI — @Altimary
+- Tests for the "existing attempts preserved" rule — @BuiDut
+
+---
+
+### US07 — Lecturer sees class statistics · P1 · 5 points · Screen: `/instructor/stats/{quizId}`
+
+> As a **lecturer**, I want to **see class statistics — average score and score distribution** so that **I can judge how the class performed overall**.
+
+**Acceptance criteria**
+- Given **20** students submitted `"Midterm Quiz"`, When Dr. Lan opens Statistics, Then the average score is displayed as `"7.25/10"`.
+- Given the submitted scores are `5, 6, 7, 8, 9, 10`, When the distribution chart is shown, Then it displays counts for each score value from **0 to 10**.
+
+**Tasks**
+- Aggregation query (average, min, max, count) — @BuiDut
+- Distribution chart component — @Altimary
+- Average-formatting test (2 decimal places) — @VizAnh
+
+---
+
+### US08 — Lecturer sees per-question difficulty · P1 · 5 points · Screen: `/instructor/stats/{quizId}`
+
+> As a **lecturer**, I want to **see per-question difficulty as a percentage of correct answers** so that **I can identify which questions were too hard**.
+
+**Acceptance criteria**
+- Given **20** students answered Question 1 and **5** answered correctly, When Dr. Lan opens Difficulty Analysis, Then Question 1 shows `"25.00% correct"`.
+- Given a question was answered correctly by **18** of **20** students, When the analysis is displayed, Then it shows `"90.00% correct"`.
+
+**Tasks**
+- Per-question correctness aggregation — @thangkaka26
+- Difficulty table UI — @Altimary
+- Edge-case tests (0 answers, 100% correct) — @BuiDut
+
+---
+
+### US09 — Lecturer manages student accounts · P1 · 5 points · Screen: `/instructor/accounts`
+
+> As a **lecturer**, I want to **create, edit, and disable student accounts** so that **only enrolled students can access my quizzes**.
+
+**Acceptance criteria**
+- Given Dr. Lan enters email `"sinhvien01@univ.edu"` with role `Student`, When she saves, Then the account is created with a temporary password and the student can log in.
+- Given a student account is `Disabled`, When the student tries to log in, Then the system shows `"Account is disabled"` and denies access.
+- Given Dr. Lan edits an account email from `"a@univ.edu"` to `"b@univ.edu"`, When she saves, Then the login credential changes and the old email no longer works.
+
+**Tasks**
+- Account CRUD API (create, edit, disable) — @thangkaka26
+- Accounts management UI — @Altimary
+- Password hashing + disabled-login tests — @BuiDut
+
+---
+
+### US10 — Student reviews answers after release · P2 · 3 points · Screen: `/results`
+
+> As a **student**, I want to **review my answers against the correct answers after the lecturer releases them** so that **I can learn from my mistakes**.
+
+**Acceptance criteria**
+- Given Dr. Lan has released answers for `"Midterm Quiz"`, When Minh opens his attempt, Then each question shows his answer, the correct answer, and whether it was correct.
+- Given Dr. Lan has **not** released answers, When Minh opens his attempt, Then only the total score is shown and no per-question detail appears.
+
+**Tasks**
+- Answer-release flag on quiz — @BuiDut
+- Per-question review view — @Altimary
+- Access-gating tests (before / after release) — @thangkaka26
 
 ## 5. Business rules
 
