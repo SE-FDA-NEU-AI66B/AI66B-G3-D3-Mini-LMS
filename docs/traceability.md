@@ -20,9 +20,9 @@ Numbered, so issues and tests can cite them.
 
 | # | Rule | Enforced where | Tested by |
 |---|------|----------------|-----------|
-| BR1 | | | |
-| BR2 | | | |
-| BR3 | | | |
-| BR4 | | | |
-| BR5 | | | |
-| BR6 | | | |
+| BR1 | A student may have at most 1 active (in-progress) attempt per quiz at a time. | | |
+| BR2 | A quiz's time limit must be between 5 minutes and 120 minutes inclusive. | | |
+| BR3 | A quiz auto-submits when the timer reaches 00:00. | | |
+| BR4 | Each question is worth 1 point, no partial credit. MCQ is graded by exact match against the marked correct option. Short-answer is graded by case-insensitive, whitespace-trimmed match against one of the lecturer's accepted answers. | | |
+| BR5 | Score is displayed as raw score out of total and percentage rounded to 2 decimal places. | | |
+| BR6 | A quiz is visible to a student only when its status is Published and the current time is before its due date. | | |
