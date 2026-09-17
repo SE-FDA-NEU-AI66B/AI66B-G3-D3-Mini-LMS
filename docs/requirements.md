@@ -80,7 +80,7 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 
 ---
 
-### US04 — Automatic grading and immediate score · P0 · 5 points · Screen: `/quiz/{id}/take` (result view)
+### US04 — Automatic grading and immediate score · P0 · 5 points · Screen: `/quiz/{id}/result?attempt={n}` (result view)
 
 > As a **student**, I want **my quiz to be graded automatically the moment I submit** so that **I get my score without waiting**.
 
