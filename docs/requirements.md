@@ -6,11 +6,47 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 
 ## 2. Personas
 
+### Persona 1 — Ha Duc Minh, the student
 
+- **Role:** 20-year-old second-year undergraduate at a Vietnamese university, taking 4 courses this semester.
+- **Goal:** keep track of upcoming quizzes in one place, and get his score immediately after submitting so he knows whether he is ready for the final exam.
+- **What blocks him:** quizzes are announced verbally in class or scattered across group chats with no central list; results come back days or weeks later after manual grading; he cannot see which topics he is weak on.
+- **In his words:** *"I just want to know my score now, not next week."*
+- **Technical skill:** comfortable with both phone and laptop; uses the university portal, Google Classroom, and Zalo daily.
+- **Interview note:** interviewed on 10-09-2026 for 30 minutes, in person.
+
+### Persona 2 — Dr. Pham Thi Lan, the lecturer
+
+- **Role:** 45-year-old lecturer at a Vietnamese university, teaching 3 courses with roughly 120 students in total.
+- **Goal:** assess students frequently without spending hours grading, and identify which topics the class is struggling with.
+- **What blocks her:** grading MCQ and short-answer quizzes by hand in Excel takes 4–6 hours per quiz; she has no reliable way to see per-question difficulty.
+- **In her words:** *"I stopped giving weekly quizzes because grading them ate my weekends."*
+- **Technical skill:** confident with Excel and the university's existing LMS; not a programmer.
+- **Interview note:** interviewed on 12-09-2026 for 25 minutes, online call.
 
 ## 3. Scenarios
 
+### Scenario 1 — Dr. Lan prepares and reviews a weekly quiz
 
+1. On Monday evening Dr. Lan decides to assess her *Introduction to Accouting* class on the week's material.
+2. She opens the platform on her laptop and signs in with her university email.
+3. She creates a new quiz, sets a title, a 30-minute time limit, and a due date of Friday 23:59.
+4. She adds 10 questions — 7 multiple-choice and 3 short-answer — each with a correct answer.
+5. She saves the quiz as a draft and reads through it once more.
+6. She publishes the quiz, and it becomes visible to all 120 students in the class.
+7. On Friday night she checks the class statistics and sees that Question 4 was answered correctly by only 25% of students.
+8. The following Monday she spends 10 minutes reviewing Question 4 in class instead of spending the weekend grading.
+
+### Scenario 2 — Minh takes a quiz and reviews his result
+
+1. On Thursday evening Minh is in his dormitory and remembers a quiz is due Friday night.
+2. He opens the platform on his laptop and signs in with his student email.
+3. He sees the quiz listed with a 30-minute limit and the Friday due date.
+4. He starts the quiz and answers the multiple-choice and short-answer questions one at a time.
+5. Halfway through, his phone rings; he briefly switches tabs but returns within the time limit.
+6. At 28 minutes he submits; the timer still shows 02:00.
+7. He immediately sees his raw score and percentage.
+8. Two days later, after Dr. Lan releases the answers, he reviews exactly which questions he got wrong.
 
 ## 4. User stories
 
