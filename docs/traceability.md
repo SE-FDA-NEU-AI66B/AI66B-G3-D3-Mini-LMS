@@ -13,10 +13,10 @@ update this file should not be approved.
 | `/quiz/{id}/take` | Take a quiz with countdown timer | U | P0 | - | #- | - | Not Started |
 | `/quiz/{id}/result?attempt={n}` | The result of the attempted quiz | U | P0 | - | #- | - | Not Started |
 | `/results` | Student's past attempts | U | P2 | - | #- | - | Not Started |
-| `/instructor/quizzes` | Lecturer's quiz list; create, publish, unpublish | A | P1 | - | #- | - | Not Started |
+| `/instructor/quizzes` | Lecturer's quiz list; create, publish, unpublish | A | P0 | - | #- | - | Not Started |
 | `/instructor/quizzes/{id}/edit` | Modify a quiz's contents, like questions or timer | A | P0 | - | #- | - | Not Started |
 | `/instructor/stats/{id}` | Quiz statistics: average, distribution, per-question difficulty | A | P1 | - | #- | - | Not Started |
-| `/instructor/accounts` | Create, edit, and disable student accounts | A | P1 | - | #- | - | Not Started |
+| `/instructor/accounts` | Create, edit, and disable student accounts | A | P0 | - | #- | - | Not Started |
 
 **Access codes:** G = guest (not logged in) · U = authenticated user · A = admin
 

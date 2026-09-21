@@ -58,11 +58,11 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 | US02 | Student sees available quizzes | P0 | 3 |
 | US03 | Student takes a quiz with countdown timer | P0 | 5 |
 | US04 | Automatic grading + immediate score | P0 | 5 |
-| US05 | Student views past attempts | P1 | 3 |
-| US06 | Lecturer publishes / unpublishes a quiz | P1 | 3 |
-| US07 | Lecturer sees class statistics | P1 | 5 |
-| US08 | Lecturer sees per-question difficulty | P1 | 5 |
-| US09 | Lecturer manages student accounts | P1 | 5 |
+| US05 | Lecturer publishes / unpublishes a quiz | P0 | 3 |
+| US06 | Lecturer manages student accounts | P0 | 5 |
+| US07 | Student views past attempts | P1 | 3 |
+| US08 | Lecturer sees class statistics | P1 | 5 |
+| US09 | Lecturer sees per-question difficulty | P1 | 5 |
 | US10 | Student reviews answers after release | P2 | 3 |
 
 
@@ -81,7 +81,6 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 - Persist quiz, questions, and accepted answers — @thangkaka26
 - Validation tests (empty title, no correct option, out-of-range limit) — @VizAnh
 
----
 
 ### US02 — Student sees available quizzes · P0 · 3 points · Screen: `/dashboard`
 
@@ -97,7 +96,6 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 - Dashboard quiz list UI — @Altimary
 - Visibility tests (draft hidden, due-date edge cases) — @VizAnh
 
----
 
 ### US03 — Student takes a quiz with countdown timer · P0 · 5 points · Screen: `/quiz/{id}/take`
 
@@ -114,7 +112,6 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 - Per-question answer persistence (resume support) — @thangkaka26
 - Timer, auto-submit, and resume tests — @BuiDut
 
----
 
 ### US04 — Automatic grading and immediate score · P0 · 5 points · Screen: `/quiz/{id}/result?attempt={n}` (result view)
 
@@ -131,24 +128,8 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 - Score + percentage renderer (2 decimal places) — @VizAnh
 - Grading unit tests (case, whitespace, wrong answer) — @thangkaka26
 
----
 
-### US05 — Student views past attempts · P1 · 3 points · Screen: `/results`
-
-> As a **student**, I want to **see my past quiz attempts and scores** so that **I can track my progress over the semester**.
-
-**Acceptance criteria**
-- Given Minh has completed **4** quizzes, When he opens `My Results`, Then **4** rows appear with quiz title, date, and score.
-- Given Minh scored **8/10** on `"Midterm Quiz"`, When the row is shown, Then it displays `"8/10"` and `"80.00%"`.
-
-**Tasks**
-- Attempt history query (grouped by quiz) — @BuiDut
-- Results list UI — @Altimary
-- Formatting and empty-state tests — @thangkaka26
-
----
-
-### US06 — Lecturer publishes / unpublishes a quiz · P1 · 3 points · Screen: `/instructor/quizzes`
+### US05 — Lecturer publishes / unpublishes a quiz · P0 · 3 points · Screen: `/instructor/quizzes`
 
 > As a **lecturer**, I want to **publish or unpublish a quiz** so that **I control exactly when students can access it**.
 
@@ -163,37 +144,7 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 
 ---
 
-### US07 — Lecturer sees class statistics · P1 · 5 points · Screen: `/instructor/stats/{quizId}`
-
-> As a **lecturer**, I want to **see class statistics — average score and score distribution** so that **I can judge how the class performed overall**.
-
-**Acceptance criteria**
-- Given **20** students submitted `"Midterm Quiz"`, When Dr. Lan opens Statistics, Then the average score is displayed as `"7.25/10"`.
-- Given the submitted scores are `5, 6, 7, 8, 9, 10`, When the distribution chart is shown, Then it displays counts for each score value from **0 to 10**.
-
-**Tasks**
-- Aggregation query (average, min, max, count) — @BuiDut
-- Distribution chart component — @Altimary
-- Average-formatting test (2 decimal places) — @VizAnh
-
----
-
-### US08 — Lecturer sees per-question difficulty · P1 · 5 points · Screen: `/instructor/stats/{quizId}`
-
-> As a **lecturer**, I want to **see per-question difficulty as a percentage of correct answers** so that **I can identify which questions were too hard**.
-
-**Acceptance criteria**
-- Given **20** students answered Question 1 and **5** answered correctly, When Dr. Lan opens Difficulty Analysis, Then Question 1 shows `"25.00% correct"`.
-- Given a question was answered correctly by **18** of **20** students, When the analysis is displayed, Then it shows `"90.00% correct"`.
-
-**Tasks**
-- Per-question correctness aggregation — @thangkaka26
-- Difficulty table UI — @Altimary
-- Edge-case tests (0 answers, 100% correct) — @BuiDut
-
----
-
-### US09 — Lecturer manages student accounts · P1 · 5 points · Screen: `/instructor/accounts`
+### US06 — Lecturer manages student accounts · P0 · 5 points · Screen: `/instructor/accounts`
 
 > As a **lecturer**, I want to **create, edit, and disable student accounts** so that **only enrolled students can access my quizzes**.
 
@@ -207,7 +158,47 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 - Accounts management UI — @Altimary
 - Password hashing + disabled-login tests — @BuiDut
 
----
+
+### US07 — Student views past attempts · P1 · 3 points · Screen: `/results`
+
+> As a **student**, I want to **see my past quiz attempts and scores** so that **I can track my progress over the semester**.
+
+**Acceptance criteria**
+- Given Minh has completed **4** quizzes, When he opens `My Results`, Then **4** rows appear with quiz title, date, and score.
+- Given Minh scored **8/10** on `"Midterm Quiz"`, When the row is shown, Then it displays `"8/10"` and `"80.00%"`.
+
+**Tasks**
+- Attempt history query (grouped by quiz) — @BuiDut
+- Results list UI — @Altimary
+- Formatting and empty-state tests — @thangkaka26
+
+### US08 — Lecturer sees class statistics · P1 · 5 points · Screen: `/instructor/stats/{quizId}`
+
+> As a **lecturer**, I want to **see class statistics — average score and score distribution** so that **I can judge how the class performed overall**.
+
+**Acceptance criteria**
+- Given **20** students submitted `"Midterm Quiz"`, When Dr. Lan opens Statistics, Then the average score is displayed as `"7.25/10"`.
+- Given the submitted scores are `5, 6, 7, 8, 9, 10`, When the distribution chart is shown, Then it displays counts for each score value from **0 to 10**.
+
+**Tasks**
+- Aggregation query (average, min, max, count) — @BuiDut
+- Distribution chart component — @Altimary
+- Average-formatting test (2 decimal places) — @VizAnh
+
+
+### US09 — Lecturer sees per-question difficulty · P1 · 5 points · Screen: `/instructor/stats/{quizId}`
+
+> As a **lecturer**, I want to **see per-question difficulty as a percentage of correct answers** so that **I can identify which questions were too hard**.
+
+**Acceptance criteria**
+- Given **20** students answered Question 1 and **5** answered correctly, When Dr. Lan opens Difficulty Analysis, Then Question 1 shows `"25.00% correct"`.
+- Given a question was answered correctly by **18** of **20** students, When the analysis is displayed, Then it shows `"90.00% correct"`.
+
+**Tasks**
+- Per-question correctness aggregation — @thangkaka26
+- Difficulty table UI — @Altimary
+- Edge-case tests (0 answers, 100% correct) — @BuiDut
+
 
 ### US10 — Student reviews answers after release · P2 · 3 points · Screen: `/results`
 

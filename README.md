@@ -13,7 +13,13 @@ Instructors create quizzes, students take them, and the system automatically gra
 | Pham Le Minh Nhat | @Altimary | member |
 
 **Product Owner** (fixed all term): **@thangkaka26**  
-**Scrum Master** (rotates every sprint): **@thangkaka26** (Sprint 1)
+|Scrum Master||
+|---|---|
+|Sprint 1| @thangkaka26 |
+|Sprint 2| @Altimary |
+|Sprint 3| |
+|Sprint 4| |
+|Sprint 5| |
 
 ## Setup
 
