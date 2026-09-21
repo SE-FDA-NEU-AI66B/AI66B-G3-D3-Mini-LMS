@@ -16,7 +16,7 @@ Instructors create quizzes, students take them, and the system automatically gra
 |Scrum Master||
 |---|---|
 |Sprint 1| @thangkaka26 |
-|Sprint 2| |
+|Sprint 2| @Altimary |
 |Sprint 3| |
 |Sprint 4| |
 |Sprint 5| |
