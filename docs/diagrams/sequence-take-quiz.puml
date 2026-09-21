@@ -1,0 +1,38 @@
+@startuml
+title Sequence — Student takes a quiz (US03 + US04)
+skinparam maxMessageSize 120
+
+actor "Student" as Student
+participant "UI\n(HTML/CSS)" as UI
+participant "API\n(FastAPI)" as API
+participant "Service" as SVC
+database "DB\n(PostgreSQL)" as DB
+
+Student -> UI : open quiz
+UI -> API : GET /quiz/{id}
+API -> SVC : get_quiz(id)
+SVC -> DB : SELECT quiz, questions
+DB --> SVC : rows
+SVC --> API : quiz payload
+API --> UI : 200 quiz JSON
+UI --> Student : render quiz + timer "30:00"
+
+alt Timer reaches 00:00
+  UI -> Student : "Time is up."
+  UI -> API : POST /quiz/{id}/submit (auto=true)
+else Student clicks Submit before 00:00
+  UI -> Student : confirmation dialog
+  Student -> UI : confirm
+  UI -> API : POST /quiz/{id}/submit (auto=false)
+end
+
+API -> SVC : grade_submission(quiz_id, answers)
+SVC -> DB : SELECT accepted_answers
+DB --> SVC : accepted_answers
+SVC -> DB : INSERT submission (score, total)
+DB --> SVC : submission_id
+SVC --> API : score=8, total=10
+API --> UI : 200 {score: 8, total: 10, percent: "80.00%"}
+UI --> Student : show "8/10 (80.00%)"
+
+@enduml
