@@ -1,0 +1,32 @@
+@startuml
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+
+actor "Student" as Student
+actor "Lecturer" as Lecturer
+actor "University SSO" as SSO
+
+rectangle "Mini-LMS" {
+  usecase "Authenticate user" as UC_Auth
+  usecase "Take a quiz" as UC_TakeQuiz
+  usecase "View my results" as UC_ViewResults
+  usecase "Create / edit a quiz" as UC_CreateQuiz
+  usecase "Publish / unpublish a quiz" as UC_PublishQuiz
+  usecase "View class statistics" as UC_ViewStats
+  usecase "Manage student accounts" as UC_ManageAccounts
+}
+
+Student --> UC_Auth
+Student --> UC_TakeQuiz
+Student --> UC_ViewResults
+
+Lecturer --> UC_Auth
+Lecturer --> UC_CreateQuiz
+Lecturer --> UC_PublishQuiz
+Lecturer --> UC_ViewStats
+Lecturer --> UC_ManageAccounts
+
+SSO --> UC_Auth
+
+@enduml

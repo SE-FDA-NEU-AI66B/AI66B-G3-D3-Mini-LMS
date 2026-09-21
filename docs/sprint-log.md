@@ -82,7 +82,7 @@ Decompose the high-priority user stories into technical architecture and impleme
 
 | Member | Planning | Review | Retro |
 |--------|:----------:|:--------:|:-------:|
-| @Thangkaka | ✔ | ✔ | ✔ |
+| @thangkaka26 | ✔ | ✔ | ✔ |
 | @Altimary | ✔ | ✔ | ✔ |
 | @BuiDut | ✔ | ✔ | ✔ |
 | @VizAnh | ✔ | ✔ | ✔ |

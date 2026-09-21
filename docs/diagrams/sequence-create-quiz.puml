@@ -1,0 +1,30 @@
+@startuml
+title Sequence — Lecturer creates a quiz (US01)
+skinparam maxMessageSize 120
+
+actor "Lecturer" as Lecturer
+participant "UI\n(HTML/CSS)" as UI
+participant "API\n(FastAPI)" as API
+participant "Service" as SVC
+database "DB\n(PostgreSQL)" as DB
+
+Lecturer -> UI : open create-quiz form
+UI --> Lecturer : render form (title, time limit, due date)
+Lecturer -> UI : enter "Midterm Quiz", 30 min, "2026-10-10 23:59"
+Lecturer -> UI : click Save
+UI -> API : POST /instructor/quizzes
+API -> SVC : validate_and_create(payload)
+
+alt input valid
+  SVC -> DB : INSERT quiz (status=Draft)
+  DB --> SVC : quiz_id
+  SVC --> API : quiz_id, status="Draft"
+  API --> UI : 201 {quiz_id, status: "Draft"}
+  UI --> Lecturer : "Quiz saved as Draft"
+else title is empty
+  SVC --> API : 400 "Title is required"
+  API --> UI : 400 {message: "Title is required"}
+  UI --> Lecturer : show error, quiz not saved
+end
+
+@enduml
