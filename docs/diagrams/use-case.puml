@@ -5,6 +5,7 @@ skinparam packageStyle rectangle
 
 actor "Student" as Student
 actor "Lecturer" as Lecturer
+actor "Admin" as Admin
 actor "University SSO" as SSO
 
 rectangle "Mini-LMS" {
@@ -14,7 +15,9 @@ rectangle "Mini-LMS" {
   usecase "Create / edit a quiz" as UC_CreateQuiz
   usecase "Publish / unpublish a quiz" as UC_PublishQuiz
   usecase "View class statistics" as UC_ViewStats
-  usecase "Manage student accounts" as UC_ManageAccounts
+  usecase "Manage accounts" as UC_ManageAccounts
+  usecase "Manage courses" as UC_ManageCourses
+  usecase "Enroll students in a course" as UC_EnrollStudents
 }
 
 Student --> UC_Auth
@@ -25,7 +28,11 @@ Lecturer --> UC_Auth
 Lecturer --> UC_CreateQuiz
 Lecturer --> UC_PublishQuiz
 Lecturer --> UC_ViewStats
-Lecturer --> UC_ManageAccounts
+
+Admin --> UC_Auth
+Admin --> UC_ManageAccounts
+Admin --> UC_ManageCourses
+Admin --> UC_EnrollStudents
 
 SSO --> UC_Auth
 

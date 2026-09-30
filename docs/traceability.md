@@ -16,9 +16,11 @@ update this file should not be approved.
 | `/instructor/quizzes` | Lecturer's quiz list; create, publish, unpublish | A | P0 | - | #- | - | Not Started |
 | `/instructor/quizzes/{id}/edit` | Modify a quiz's contents, like questions or timer | A | P0 | - | #- | - | Not Started |
 | `/instructor/stats/{id}` | Quiz statistics: average, distribution, per-question difficulty | A | P1 | - | #- | - | Not Started |
-| `/instructor/accounts` | Create, edit, and disable student accounts | A | P0 | - | #- | - | Not Started |
+| `/admin/courses` | Admin creates courses and assigns one lecturer per course | AD | P0 | - | #- | - | Not Started |
+| `/admin/courses/{id}/students` | Admin adds or removes students from a course | AD | P0 | - | #- | - | Not Started |
+| `/admin/accounts` | Admin creates or disables user accounts | AD | P0 | - | #- | - | Not Started |
 
-**Access codes:** G = guest (not logged in) · U = authenticated user · A = admin
+**Access codes:** G = guest (not logged in) · U = authenticated user · A = admin · AD = authenticated admin
 
 **Status:** Not started / In progress / Done
 
@@ -34,3 +36,6 @@ Numbered, so issues and tests can cite them.
 | BR4 | Each question is worth 1 point, no partial credit. MCQ is graded by exact match against the marked correct option. Short-answer is graded by case-insensitive, whitespace-trimmed match against one of the lecturer's accepted answers. | | |
 | BR5 | Score is displayed as raw score out of total and percentage rounded to 2 decimal places. | | |
 | BR6 | A quiz is visible to a student only when its status is Published and the current time is before its due date. | | |
+| BR7 | Authentication is delegated to the **university SSO**. Mini-LMS never stores passwords; it stores only the SSO-returned identity and the local role (`Student` / `Lecturer` / `Admin`). | | |
+| BR8 | Role-based access: Student sees quizzes + own results; Lecturer sees quizzes, statistics, and enrollment controls only for courses assigned to them; Admin sees account + course management only. No role can reach another role's area. | | |
+| BR9 | A course must have exactly 1 assigned lecturer at a time. Removing the current lecturer without a replacement is blocked. | | |
