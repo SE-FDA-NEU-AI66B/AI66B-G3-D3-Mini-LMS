@@ -8,15 +8,15 @@ participant "API\n(FastAPI)" as API
 participant "Service" as SVC
 database "DB\n(PostgreSQL)" as DB
 
-Lecturer -> UI : open create-quiz form
+Lecturer -> UI : open create-quiz form (course ACC101)
 UI --> Lecturer : render form (title, time limit, due date)
 Lecturer -> UI : enter "Midterm Quiz", 30 min, "2026-10-10 23:59"
 Lecturer -> UI : click Save
-UI -> API : POST /instructor/quizzes
-API -> SVC : validate_and_create(payload)
+UI -> API : POST /instructor/courses/{course_id}/quizzes
+API -> SVC : validate_and_create(course_id, payload)
 
 alt input valid
-  SVC -> DB : INSERT quiz (status=Draft)
+  SVC -> DB : INSERT quiz (course_id, status=Draft)
   DB --> SVC : quiz_id
   SVC --> API : quiz_id, status="Draft"
   API --> UI : 201 {quiz_id, status: "Draft"}
@@ -26,5 +26,4 @@ else title is empty
   API --> UI : 400 {message: "Title is required"}
   UI --> Lecturer : show error, quiz not saved
 end
-
 @enduml
