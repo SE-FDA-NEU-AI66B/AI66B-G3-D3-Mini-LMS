@@ -259,8 +259,9 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 | **BR5** | Score is displayed as raw score out of total **and** percentage rounded to **2 decimal places**. | **8** correct out of **10** → `"8/10"` and `"80.00%"`. **7** correct out of **9** → `"7/9"` and `"77.78%"`. |
 | **BR6** | A quiz is visible to a student only when its status is `Published`, the current time is before its due date, **and** the student is enrolled in the owning course. | Quiz due `2026-10-10 23:59`, status `Published`, course `"ACC101"` → visible to Minh on `2026-10-10 22:00` because he is enrolled. Same quiz on `2026-10-11 00:01` → not visible. |
 | **BR7** | Authentication is delegated to the **university SSO**. Mini-LMS never stores passwords; it stores only the SSO-returned identity and the local role (`Student` / `Lecturer` / `Admin`). | Minh signs in via SSO with `minhhd@univ.edu`. Mini-LMS receives a verified identity, looks up the local role, and routes him to `/dashboard`. Dr. Lan signs in via the same SSO and is routed to `/instructor/quizzes`. |
-| **BR8** | Role-based access: **Student** sees quizzes + own results; **Lecturer** sees quizzes, statistics, and enrollment controls only for courses assigned to them; **Admin** sees account + course management only. No role can reach another role's area. | Dr. Lan is assigned to `"ACC101"` but not `"ACC102"`. She opens `/instructor/stats/ACC102` → `"Access denied"`. A student opening `/admin/accounts` → `"Access denied"`. |
+| **BR8** | Role-based access: **Student** sees quizzes + own results; **Lecturer** sees quizzes, statistics, and a read-only monitoring view of students in their own courses (roster + per-student status); **Admin** manages accounts, courses, and enrollment only. No role can reach another role's area. | Dr. Lan is assigned to `"ACC101"` but not `"ACC102"`. She opens `"ACC102"`'s roster → `"Access denied"`. She can view `"ACC101"`'s roster but cannot add or remove students there — only the Admin can (US12). |
 | **BR9** | A course must have **exactly 1 assigned lecturer** at a time. Removing the current lecturer without a replacement is blocked. | `"ACC101"` has Dr. Lan. Admin tries to remove her → `"Assign another lecturer first"`. After assigning `"tuanvm@univ.edu"` and confirming the swap, the admin can remove Dr. Lan. |
+| **BR10** | Every quiz attempt records tab-switch events (browser visibility change / window blur). If a student leaves the quiz tab **more than 3 times** during a single attempt, the attempt is **flagged**. The student's score is graded normally — the flag appears **only** in the lecturer's monitoring view as a warning icon in that student's row. | Minh's 30-minute attempt records tab-switches at 5:00, 12:10, 18:30, and 25:00 → **4** switches → flagged. His score is graded normally (e.g., `8/10`), and Dr. Lan sees a ⚠ icon next to his name. A student with **3** switches is **not** flagged. |
 
 ## 6. Screens and flow
 
@@ -276,10 +277,12 @@ For students and lecturers at a Vietnamese university who today rely on paper qu
 | `/results` | Student's past attempts | U | P2 |
 | `/instructor/quizzes` | Lecturer's quiz list; create, publish, unpublish | A | P1 |
 | `/instructor/quizzes/{id}/edit` | Modify a quiz's contents, like questions or timer | A | P0 |
+| `/instructor/quizzes/{id}/students` | Lecturer's read-only monitoring view of a published quiz: roster with per-student status (attempted / not attempted), score, and ⚠ cheat-warning icon (BR10). Default view when the lecturer clicks a published quiz. | A | P1 |
 | `/instructor/stats/{id}` | Quiz statistics: average, distribution, per-question difficulty | A | P1 |
 | `/admin/courses` | Admin creates courses and assigns one lecturer per course | AD | P0 |
 | `/admin/courses/{id}/students` | Admin adds or removes students from a course | AD | P0 |
 | `/admin/accounts` | Admin creates or disables user accounts | AD | P0 |
 
 ### Flow diagram
-![](images/flow.png)
+
+![Flow diagram — screen access by role](./images/flow.png)

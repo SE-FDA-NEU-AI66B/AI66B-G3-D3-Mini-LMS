@@ -15,6 +15,7 @@ update this file should not be approved.
 | `/results` | Student's past attempts | U | P2 | - | #- | - | Not Started |
 | `/instructor/quizzes` | Lecturer's quiz list; create, publish, unpublish | A | P0 | - | #- | - | Not Started |
 | `/instructor/quizzes/{id}/edit` | Modify a quiz's contents, like questions or timer | A | P0 | - | #- | - | Not Started |
+| `/instructor/quizzes/{id}/students` | Lecturer's read-only monitoring view of a published quiz: roster with per-student status (attempted / not attempted), score, and ⚠ cheat-warning icon (BR10). Default view when the lecturer clicks a published quiz. | A | P1 | - | #- | - | Not Started |
 | `/instructor/stats/{id}` | Quiz statistics: average, distribution, per-question difficulty | A | P1 | - | #- | - | Not Started |
 | `/admin/courses` | Admin creates courses and assigns one lecturer per course | AD | P0 | - | #- | - | Not Started |
 | `/admin/courses/{id}/students` | Admin adds or removes students from a course | AD | P0 | - | #- | - | Not Started |
@@ -36,6 +37,7 @@ Numbered, so issues and tests can cite them.
 | BR4 | Each question is worth 1 point, no partial credit. MCQ is graded by exact match against the marked correct option. Short-answer is graded by case-insensitive, whitespace-trimmed match against one of the lecturer's accepted answers. | | |
 | BR5 | Score is displayed as raw score out of total and percentage rounded to 2 decimal places. | | |
 | BR6 | A quiz is visible to a student only when its status is Published and the current time is before its due date. | | |
-| BR7 | Authentication is delegated to the **university SSO**. Mini-LMS never stores passwords; it stores only the SSO-returned identity and the local role (`Student` / `Lecturer` / `Admin`). | | |
-| BR8 | Role-based access: Student sees quizzes + own results; Lecturer sees quizzes, statistics, and enrollment controls only for courses assigned to them; Admin sees account + course management only. No role can reach another role's area. | | |
+| BR7 | Authentication is delegated to the university SSO. Mini-LMS never stores passwords; it stores only the SSO-returned identity and the local role (`Student` / `Lecturer` / `Admin`). | | |
+| BR8 | Role-based access: Student sees quizzes + own results; Lecturer sees quizzes, statistics, and a read-only monitoring view of students in their own courses (roster + per-student status); Admin manages accounts, courses, and enrollment only. No role can reach another role's area. | | |
 | BR9 | A course must have exactly 1 assigned lecturer at a time. Removing the current lecturer without a replacement is blocked. | | |
+| **BR10** | Every quiz attempt records tab-switch events (browser visibility change / window blur). If a student leaves the quiz tab **more than 3 times** during a single attempt, the attempt is **flagged**. The student's score is graded normally — the flag appears **only** in the lecturer's monitoring view as a warning icon in that student's row. | | |
