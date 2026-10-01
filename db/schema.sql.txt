@@ -1,0 +1,96 @@
+DROP TABLE IF EXISTS
+    answer, attempt, option, question, quiz, enrollment, course, "user"
+CASCADE;
+
+DROP TYPE IF EXISTS
+    question_type, quiz_status, enrollment_status, user_status, user_role
+CASCADE;
+
+CREATE TYPE user_role         AS ENUM ('Student', 'Lecturer', 'Admin');
+CREATE TYPE user_status       AS ENUM ('Active', 'Disabled');
+CREATE TYPE enrollment_status AS ENUM ('Active', 'Removed');
+CREATE TYPE quiz_status       AS ENUM ('Draft', 'Published', 'Unpublished');
+CREATE TYPE question_type     AS ENUM ('MCQ', 'SHORT');
+
+CREATE TABLE "user" (
+    user_id    SERIAL PRIMARY KEY,
+    email      VARCHAR(255) UNIQUE NOT NULL,
+    full_name  VARCHAR(255) NOT NULL,
+    role       user_role NOT NULL,
+    status     user_status NOT NULL DEFAULT 'Active',
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE course (
+    course_id   SERIAL PRIMARY KEY,
+    code        VARCHAR(20) UNIQUE NOT NULL,
+    name        VARCHAR(255) NOT NULL,
+    lecturer_id INTEGER NOT NULL REFERENCES "user"(user_id)
+);
+
+CREATE TABLE enrollment (
+    enrollment_id SERIAL PRIMARY KEY,
+    student_id    INTEGER NOT NULL REFERENCES "user"(user_id),
+    course_id     INTEGER NOT NULL REFERENCES course(course_id),
+    enrolled_at   TIMESTAMP NOT NULL DEFAULT NOW(),
+    status        enrollment_status NOT NULL DEFAULT 'Active',
+    UNIQUE (student_id, course_id)
+);
+
+CREATE TABLE quiz (
+    quiz_id          SERIAL PRIMARY KEY,
+    course_id        INTEGER NOT NULL REFERENCES course(course_id),
+    created_by       INTEGER NOT NULL REFERENCES "user"(user_id),
+    title            VARCHAR(255) NOT NULL,
+    time_limit_min   INTEGER NOT NULL CHECK (time_limit_min BETWEEN 5 AND 120),
+    due_at           TIMESTAMP NOT NULL,
+    status           quiz_status NOT NULL DEFAULT 'Draft',
+    answers_released BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at       TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE question (
+    question_id      SERIAL PRIMARY KEY,
+    quiz_id          INTEGER NOT NULL REFERENCES quiz(quiz_id),
+    position         INTEGER NOT NULL,
+    question_type    question_type NOT NULL,
+    prompt           TEXT NOT NULL,
+    accepted_answers TEXT,
+    points           INTEGER NOT NULL DEFAULT 1,
+    UNIQUE (quiz_id, position)
+);
+
+CREATE TABLE option (
+    option_id   SERIAL PRIMARY KEY,
+    question_id INTEGER NOT NULL REFERENCES question(question_id),
+    label       CHAR(1) NOT NULL,
+    text        TEXT NOT NULL,
+    is_correct  BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE attempt (
+    attempt_id       SERIAL PRIMARY KEY,
+    quiz_id          INTEGER NOT NULL REFERENCES quiz(quiz_id),
+    student_id       INTEGER NOT NULL REFERENCES "user"(user_id),
+    started_at       TIMESTAMP NOT NULL DEFAULT NOW(),
+    submitted_at     TIMESTAMP,
+    auto_submitted   BOOLEAN NOT NULL DEFAULT FALSE,
+    score            INTEGER,
+    total            INTEGER,
+    tab_switch_count INTEGER NOT NULL DEFAULT 0
+);
+
+-- BR1: at most one active attempt per (student, quiz)
+CREATE UNIQUE INDEX attempt_one_active
+    ON attempt (student_id, quiz_id)
+    WHERE submitted_at IS NULL;
+
+CREATE TABLE answer (
+    answer_id        SERIAL PRIMARY KEY,
+    attempt_id       INTEGER NOT NULL REFERENCES attempt(attempt_id),
+    question_id      INTEGER NOT NULL REFERENCES question(question_id),
+    chosen_option_id INTEGER REFERENCES option(option_id),
+    text_answer      TEXT,
+    is_correct       BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE (attempt_id, question_id)
+);
