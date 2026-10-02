@@ -23,7 +23,7 @@ Install these before continuing. Versions matter.
   - Keep the default port `5432`.
   - The Windows service is created as `postgresql-x64-18`.
 
-  
+
 - **macOS (Homebrew):**
   ```bash
   brew install postgresql@18
@@ -132,7 +132,7 @@ Running schema and seed ...
   → db/seed.sql
 
 Database initialised.
-  users       : 13
+  users       : 10
   courses     : 3
   enrollments : 20
   quizzes     : 12
