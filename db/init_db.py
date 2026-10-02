@@ -27,7 +27,6 @@ import psycopg
 from src.config import db as db_config
 from src.config import settings
 
-
 SCHEMA_FILE = ROOT / "db" / "schema.sql.txt"
 SEED_FILE = ROOT / "db" / "seed.sql.txt"
 
@@ -48,9 +47,11 @@ def ensure_database_exists() -> None:
 
     print(f"Database '{target}' not found — creating it ...")
     try:
-        with db_config.connect(target_db="postgres", autocommit=True) as conn:
-            with conn.cursor() as cur:
-                cur.execute(f'CREATE DATABASE "{target}"')
+        with (
+            db_config.connect(target_db="postgres", autocommit=True) as conn,
+            conn.cursor() as cur,
+        ):
+            cur.execute(f'CREATE DATABASE "{target}"')
     except psycopg.errors.DuplicateDatabase:
         pass
     except psycopg.Error as exc:

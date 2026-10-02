@@ -7,14 +7,12 @@ changing the database engine later means editing one file, not fifty.
 
 from __future__ import annotations
 
-from typing import Optional
-
 import psycopg
 
 from . import settings
 
 
-def connection_params(target_db: Optional[str] = None) -> dict:
+def connection_params(target_db: str | None = None) -> dict:
     return {
         "host": settings.DB_HOST,
         "port": settings.DB_PORT,
@@ -24,7 +22,7 @@ def connection_params(target_db: Optional[str] = None) -> dict:
     }
 
 
-def connect(target_db: Optional[str] = None, autocommit: bool = False) -> psycopg.Connection:
+def connect(target_db: str | None = None, autocommit: bool = False) -> psycopg.Connection:
     """
     Open a connection to the Mini-LMS database.
 

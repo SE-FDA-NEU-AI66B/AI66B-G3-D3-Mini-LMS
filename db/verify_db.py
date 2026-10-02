@@ -14,6 +14,7 @@ from __future__ import annotations
 import pathlib
 import sys
 
+# Allow running as `python db/verify_db.py` from the repo root.
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -22,7 +23,6 @@ import psycopg
 
 from src.config import db as db_config
 from src.config import settings
-
 
 WALKING_SKELETON_SQL = """
 SELECT q.quiz_id,
@@ -52,13 +52,12 @@ def main() -> None:
 
     print(f"Target:  {settings.describe_target()}")
     print(f"Student: {email}")
-    print(f"Query:   walking skeleton (visible quizzes for this student)\n")
+    print("Query:   walking skeleton (visible quizzes for this student)\n")
 
     try:
-        with db_config.connect() as conn:
-            with conn.cursor() as cur:
-                cur.execute(WALKING_SKELETON_SQL, (email,))
-                rows = cur.fetchall()
+        with db_config.connect() as conn, conn.cursor() as cur:
+            cur.execute(WALKING_SKELETON_SQL, (email,))
+            rows = cur.fetchall()
     except psycopg.OperationalError as exc:
         fail(
             f"Cannot connect to the database: {exc}\n"
