@@ -108,8 +108,6 @@
 
 ## 6. What changed since M1
 
-## 6. What Changed Since M1
-
 Four changes, ordered by how much they reshaped the document.
 
 1. **Added the Admin role (US06, US11, US12 at P0).** M1 had lecturers managing their own accounts and courses. The reviewer made it clear this overloaded the lecturer's job. Ownership moved to a dedicated administrative role whose scope is roster maintenance only. **BR8** was rewritten to separate *manage* (Admin, write) from *monitor* (Lecturer, read).
