@@ -408,7 +408,7 @@ It drops and recreates every table.
 
 | Tester | Machine | OS | Date | Time |
 |---|---|---|---|---|
-| *(to be filled in by the reviewer)* | | | | |
+| Bùi Tuấn Anh | Thinkpad T14 | Window | 3/10/2026 | 15 minutes |
 
 ---
 
