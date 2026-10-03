@@ -156,6 +156,12 @@ Two ADRs. Each records options, choice, why, and what would make us change our m
 **What would change our mind:** if the instructor's machine cannot host a local PostgreSQL at all, we fall back to SQLite in a single sprint — only `db/schema.sql` changes. If we later need fully isolated dev environments, we move to Docker Compose.
 Four changes, ordered by how much they reshaped the document.
 
+---
+
+## 6. What changed since M1
+
+Four changes, ordered by how much they reshaped the document.
+
 1. **Added the Admin role (US06, US11, US12 at P0).** M1 had lecturers managing their own accounts and courses. The reviewer made it clear this overloaded the lecturer's job. Ownership moved to a dedicated administrative role whose scope is roster maintenance only. **BR8** was rewritten to separate *manage* (Admin, write) from *monitor* (Lecturer, read).
 
 2. **Added BR10 — tab-switch cheating signal.** M1 did not model anti-cheating at all. **BR10** now records every tab-switch event on the `attempt` table; more than 3 events in one attempt flags the row, and the flag is visible only to the lecturer in the roster view. No new user story — the flag surfaces inside the existing lecturer monitoring screen.
