@@ -97,14 +97,66 @@
 | US11 Admin creates courses + assigns lecturer | `POST /api/admin/courses`, `PATCH /api/admin/courses/{courseId}/lecturer` |
 | US12 Admin enrolls students | `POST /api/admin/courses/{courseId}/enrollments`, `DELETE /api/admin/courses/{courseId}/enrollments/{studentId}` |
 
-
 ## 4. Walking skeleton
 
+**Route:** `GET /api/quizzes` · **Table read:** `quiz` (joined with `course`).
 
+**Seed size:** 3 courses, 2 lecturers, 10 students, 12 quizzes, 48 questions, 2 completed attempts with answers.
+
+**Screenshot:** `docs/images/walking-skeleton.png` — the dashboard rendering 12 seeded quizzes.
+
+**The SQL behind the page:**
+
+```sql
+SELECT q.quiz_id, q.title, c.code AS course_code, q.due_at, q.time_limit_min
+FROM quiz q
+JOIN course c      ON c.course_id = q.course_id
+JOIN enrollment e  ON e.course_id = c.course_id
+WHERE q.status = 'Published'
+  AND q.due_at > NOW()
+  AND e.student_id = :current_user_id
+  AND e.status = 'Active'
+ORDER BY q.due_at;
+```
+
+**Proof that the data is real.** Stop the local PostgreSQL service:
+
+- **macOS (Homebrew):** `brew services stop postgresql@{version}`
+- **Linux (systemd):** `sudo systemctl stop postgresql`
+- **Windows:** Services panel → stop the `postgresql-x64-{version}` service
+
+Then refresh the dashboard → FastAPI logs a `500 Internal Server Error`. Restart the service, refresh → the page recovers. This is the check described in `docs/SETUP.md`.
+
+**Full install steps:** see `docs/SETUP.md`.
+
+---
 
 ## 5. Design decisions
 
+Two ADRs. Each records options, choice, why, and what would make us change our mind.
 
+### ADR-1 — Authentication via mock SSO instead of local passwords
+
+**Options:** (a) local email + password with bcrypt, (b) mock SSO that returns a signed `id_token`, (c) real university OIDC.
+
+**Chose:** **(b) mock SSO.**
+
+**Why:** BR7 fixes SSO as the auth method, but a real university SSO cannot be exercised by the marker on a fresh machine. A 60-line mock SSO reproduces the exact redirect → callback → identity shape while remaining runnable offline. It also keeps `user.email` as the sole identity key — no password column ever enters the schema, so a database leak cannot leak credentials.
+
+**What would change our mind:** if the university provides a sandbox OIDC tenant reachable from anywhere, we swap the mock for the real IdP in Sprint 4. Only `src/services/auth_service.py` changes.
+
+### ADR-2 — Local PostgreSQL instead of SQLite (no Docker this sprint)
+
+**Options:** (a) SQLite file next to the code, (b) PostgreSQL installed locally, (c) PostgreSQL in a Docker container.
+
+**Chose:** **(b) PostgreSQL installed locally.**
+
+**Why:** we want the *same* engine in development, in the demo, and in the schema, so a bug never appears only on demo day. PostgreSQL gives us partial unique indexes (**BR1**) and a real enum type (**BR4**) rather than SQLite workarounds. Docker would add an extra prerequisite to the fresh-machine setup, and this sprint we prefer the simplest environment that still passes the marker's 15-minute test — a local PostgreSQL service started by the operating system. SQLAlchemy models remain dialect-neutral, so the choice is reversible.
+
+**What would change our mind:** if the instructor's machine cannot host a local PostgreSQL at all, we fall back to SQLite in a single sprint — only `db/schema.sql` changes. If we later need fully isolated dev environments, we move to Docker Compose.
+Four changes, ordered by how much they reshaped the document.
+
+---
 
 ## 6. What changed since M1
 
