@@ -1,7 +1,7 @@
 # Secrets - never commit these. CI will reject the PR.
 .env
 .env.*
-!.env.example
+.env.example
 *.pem
 *.key
 credentials.json
