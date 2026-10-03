@@ -32,9 +32,6 @@
 | **attempt** | One student's attempt on one quiz. | `attempt_id` PK · `quiz_id` FK · `student_id` FK · `started_at` · `submitted_at` NULL · `auto_submitted` BOOL · `score` INT NULL · `total` INT NULL · `tab_switch_count` INT DEFAULT 0 · **PARTIAL UNIQUE(student_id, quiz_id) WHERE submitted_at IS NULL** | Partial UNIQUE (**BR1**). `auto_submitted` (**BR3**). `tab_switch_count > 3` → ⚠ flag (**BR10**). |
 | **answer** | One question's answer inside an attempt. | `answer_id` PK · `attempt_id` FK · `question_id` FK · `chosen_option_id` FK NULL · `text_answer` TEXT NULL · `is_correct` BOOL · **UNIQUE(attempt_id, question_id)** | `is_correct` computed at submit time (**BR4**). Required for **US10** (per-question review). |
 
-Every table, PK, and FK above appears in `erd.puml`; the image and this table agree.
-
-
 ## 3. API design
 
 ### Auth / session
