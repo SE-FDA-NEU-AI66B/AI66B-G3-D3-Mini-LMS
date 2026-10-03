@@ -7,6 +7,8 @@
 
 ## 2. Data model
 
+![ERD](images/erd.png)
+
 **The ERD in brief (full attributes in the image):**
 
 ```text
