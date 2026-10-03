@@ -29,8 +29,8 @@
 | **quiz** | A quiz inside a course. | `quiz_id` PK · `course_id` FK · `created_by` FK · `title` · `time_limit_min` INT · `due_at` TIMESTAMP · `status` ENUM(Draft, Published, Unpublished) · `answers_released` BOOL · `created_at` | `CHECK (time_limit_min BETWEEN 5 AND 120)` (**BR2**). `status='Published'` gates visibility (**BR6**). `answers_released` gates **US10**. |
 | **question** | One question in a quiz. | `question_id` PK · `quiz_id` FK · `position` INT · `question_type` ENUM(MCQ, SHORT) · `prompt` TEXT · `accepted_answers` TEXT (JSON, for SHORT) · `points` INT DEFAULT 1 · **UNIQUE(quiz_id, position)** | `points = 1` (**BR4**). |
 | **option** | One selectable choice for an MCQ. | `option_id` PK · `question_id` FK · `label` CHAR(1) · `text` · `is_correct` BOOL | Exactly one `is_correct=TRUE` per MCQ (**BR4**). |
-
----
+| **attempt** | One student's attempt on one quiz. | `attempt_id` PK · `quiz_id` FK · `student_id` FK · `started_at` · `submitted_at` NULL · `auto_submitted` BOOL · `score` INT NULL · `total` INT NULL · `tab_switch_count` INT DEFAULT 0 · **PARTIAL UNIQUE(student_id, quiz_id) WHERE submitted_at IS NULL** | Partial UNIQUE (**BR1**). `auto_submitted` (**BR3**). `tab_switch_count > 3` → ⚠ flag (**BR10**). |
+| **answer** | One question's answer inside an attempt. | `answer_id` PK · `attempt_id` FK · `question_id` FK · `chosen_option_id` FK NULL · `text_answer` TEXT NULL · `is_correct` BOOL · **UNIQUE(attempt_id, question_id)** | `is_correct` computed at submit time (**BR4**). Required for **US10** (per-question review). |
 
 ## 3. API design
 
