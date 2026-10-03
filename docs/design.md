@@ -154,7 +154,3 @@ Two ADRs. Each records options, choice, why, and what would make us change our m
 **Why:** we want the *same* engine in development, in the demo, and in the schema, so a bug never appears only on demo day. PostgreSQL gives us partial unique indexes (**BR1**) and a real enum type (**BR4**) rather than SQLite workarounds. Docker would add an extra prerequisite to the fresh-machine setup, and this sprint we prefer the simplest environment that still passes the marker's 15-minute test — a local PostgreSQL service started by the operating system. SQLAlchemy models remain dialect-neutral, so the choice is reversible.
 
 **What would change our mind:** if the instructor's machine cannot host a local PostgreSQL at all, we fall back to SQLite in a single sprint — only `db/schema.sql` changes. If we later need fully isolated dev environments, we move to Docker Compose.
-
----
-
-## 6. What Changed Since M1
