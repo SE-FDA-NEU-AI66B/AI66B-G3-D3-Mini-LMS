@@ -108,3 +108,12 @@
 
 ## 6. What changed since M1
 
+Four changes, ordered by how much they reshaped the document.
+
+1. **Added the Admin role (US06, US11, US12 at P0).** M1 had lecturers managing their own accounts and courses. The reviewer made it clear this overloaded the lecturer's job. Ownership moved to a dedicated administrative role whose scope is roster maintenance only. **BR8** was rewritten to separate *manage* (Admin, write) from *monitor* (Lecturer, read).
+
+2. **Added BR10 — tab-switch cheating signal.** M1 did not model anti-cheating at all. **BR10** now records every tab-switch event on the `attempt` table; more than 3 events in one attempt flags the row, and the flag is visible only to the lecturer in the roster view. No new user story — the flag surfaces inside the existing lecturer monitoring screen.
+
+3. **Added BR7 — authentication delegated to university SSO.** M1's diagrams showed `University SSO` as an actor, but no rule explained what it did. **BR7** closes that gap: Mini-LMS never stores passwords; only the SSO-returned email and the local role are kept.
+
+4. **Added US12 (Admin enrols students) and promoted it to P0.** M1 assumed students self-enrolled or were enrolled by the lecturer. Both were wrong for a course-scoped system. Enrolment is now a first-class admin action, mapped to `POST /api/admin/courses/{id}/students`.
