@@ -2,7 +2,7 @@
 
 This guide takes a **brand-new machine** from zero to a running Mini-LMS API that returns real data from PostgreSQL. Follow it top to bottom; do not skip steps.
 
-**Time to complete:** about 15–20 minutes on a fresh machine.
+**Time to complete:** about 8–15 minutes on a fresh machine.
 
 ---
 
@@ -10,17 +10,16 @@ This guide takes a **brand-new machine** from zero to a running Mini-LMS API tha
 
 Install these before continuing. Versions matter.
 
-| Tool | Minimum version | Check | If missing |
-|---|---|---|---|
-| Git | 2.40 | `git --version` | <https://git-scm.com/downloads> |
-| Python | 3.11 | `python --version` | <https://www.python.org/downloads/> |
-| PostgreSQL | 18 | `psql --version` | see below |
-
-> **Python version.** If `python --version` shows anything below 3.11 (e.g. `3.10` or `3.9`), stop and install 3.11 or newer. The code uses `X | Y` type unions that require 3.10+, and the guide is tested on 3.11+.
+| Tool | Minimum version | Download |
+|---|---|---|
+| Git | 2.40 | <https://git-scm.com/downloads> |
+| Python | 3.11 | <https://www.python.org/downloads/> |
+| PostgreSQL | 17 | <https://www.enterprisedb.com/downloads/postgres-postgresql-downloads> |
+|pgAdmin 4 | 9.15 | <https://www.pgadmin.org/> |
 
 ### 1.1 Installing Homebrew (macOS only)
 
-If you are on macOS and do not already have Homebrew, install it first. This is the package manager that provides `postgresql@18` in the next step.
+If you are on macOS and do not already have Homebrew, install it first. This is the package manager that provides `postgresql@17` in the next step.
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -48,22 +47,22 @@ brew --version
 
 You should see something like `Homebrew 4.x.x`.
 
-### 1.2 Installing PostgreSQL 18
+### 1.2 Installing PostgreSQL
 
-**Windows** — download the installer from <https://www.postgresql.org/download/windows/> and run the wizard.
-- Set the `postgres` superuser password to `postgres` for this course.
-- Keep the default port `5432`.
-- The Windows service is created as `postgresql-x64-18`.
+**Windows** — download the installer from [here](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads) and run the wizard.
+- Set the `postgres` superuser password to `postgres` for this course (or your customized username & password).
+- Keep the default port `5432` (or your customized port).
+- The Windows service in `services.msc` is created as `postgresql-x64-17`.
 - **After installation, open a new terminal** so `psql` is on PATH.
 
 **macOS (Homebrew):**
 ```bash
-brew install postgresql@18
-brew services start postgresql@18
+brew install postgresql@17
+brew services start postgresql@17
 
 # Homebrew does not symlink versioned formulas onto PATH by default:
-echo 'export PATH="/opt/homebrew/opt/postgresql@18/bin:$PATH"' >> ~/.zshrc
-# Intel Mac: use /usr/local/opt/postgresql@18/bin instead of /opt/homebrew/...
+echo 'export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"' >> ~/.zshrc
+# Intel Mac: use /usr/local/opt/postgresql@17/bin instead of /opt/homebrew/...
 exec zsh
 ```
 Homebrew creates a superuser matching your macOS username with **no password**.
@@ -73,7 +72,7 @@ Homebrew creates a superuser matching your macOS username with **no password**.
 sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 sudo apt update
-sudo apt install -y postgresql-18
+sudo apt install -y postgresql-17
 sudo systemctl start postgresql
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
 ```
@@ -84,7 +83,7 @@ Confirm the database server is reachable. You may be prompted for the password y
 psql -U postgres -h localhost -c "SELECT version();"
 ```
 
-You should see a line starting with `PostgreSQL 18.x`.
+You should see a line starting with `PostgreSQL 17.x`.
 
 ---
 
@@ -95,7 +94,7 @@ git clone https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS.git
 cd AI66B-G3-D3-Mini-LMS
 ```
 
-Create and activate a virtual environment.
+Then create and activate a virtual environment.
 
 **macOS / Linux:**
 ```bash
@@ -120,15 +119,6 @@ Install dependencies.
 
 ```bash
 pip install -r requirements.txt
-```
-
-`requirements.txt` contains:
-
-```text
-psycopg[binary]>=3.2       # PostgreSQL driver (binary wheel = no C build step)
-python-dotenv>=1.0         # loads .env into environment variables
-fastapi>=0.115             # web framework
-uvicorn[standard]>=0.32    # ASGI server that runs FastAPI
 ```
 
 You should now see `(.venv)` at the start of your shell prompt.
@@ -161,6 +151,10 @@ SESSION_SECRET=change-me
 SSO_MOCK_BASE_URL=http://localhost:8000/mock-sso
 ```
 
+If your machine has pgAdmin 4 installed, this is where you can find your local database properties
+
+![localdb](images/local-db-props.png)
+
 Use this table to pick the right `DB_USER` / `DB_PASSWORD` for your OS:
 
 | OS | `DB_USER` | `DB_PASSWORD` |
@@ -184,7 +178,7 @@ You should see a line containing `.gitignore:.env` (or similar).
 
 ## 4. Create and seed the database
 
-One command creates the `minilms` database (if missing), applies `db/schema.sql.txt`, and loads `db/seed.sql.txt`.
+One command creates the `postgres` database (if missing), applies `db/schema.sql.txt`, and loads `db/seed.sql.txt`.
 
 ```bash
 python db/init_db.py
@@ -193,9 +187,9 @@ python db/init_db.py
 Expected output on the **first** run:
 
 ```
-Target: postgres@localhost:5432/minilms
+Target: postgres@localhost:5432/postgres
 
-Database 'minilms' not found — creating it ...
+Database 'postgres' not found — creating it ...
 Running schema and seed ...
   → db/schema.sql.txt
   → db/seed.sql.txt
@@ -211,7 +205,7 @@ Database initialised.
   answers     : 8
 ```
 
-On subsequent runs, the line `Database 'minilms' not found — creating it ...` will not appear — the database already exists.
+On subsequent runs, the line `Database 'postgres' not found — creating it ...` will not appear — the database already exists.
 
 The script is safe to run more than once. It **drops and recreates every table**, then reseeds. Use it whenever you want a clean database.
 
@@ -228,7 +222,7 @@ python db/verify_db.py
 Expected output:
 
 ```
-Target:  postgres@localhost:5432/minilms
+Target:  postgres@localhost:5432/postgres
 Student: minhhd@univ.edu
 Query:   walking skeleton (visible quizzes for this student)
 
@@ -249,7 +243,7 @@ If you see this table, PostgreSQL holds the data and Python can read it.
 > **Note on dates.** The query filters by `q.due_at > NOW()`. If your machine's clock is past `2026-12-14`, every seeded quiz will already be due, and you'll see *"No visible quizzes for this student."* To fix it without editing the seed file, run this one-liner and re-run the verification:
 >
 > ```bash
-> psql -U postgres -h localhost -d minilms -c "UPDATE quiz SET due_at = due_at + INTERVAL '1 year';"
+> psql -U postgres -h localhost -d postgres -c "UPDATE quiz SET due_at = due_at + INTERVAL '1 year';"
 > ```
 >
 > Or edit the dates in `db/seed.sql.txt` and re-run `python db/init_db.py`.
@@ -315,31 +309,9 @@ The **Response body** panel shows JSON with **6 quizzes**, sourced from PostgreS
 }
 ```
 
-### Running the curl example on the terminal
+![aizun_test](images/aizun_test.jpg)
 
-The `curl` command in this section uses POSIX quoting (single quotes). Windows shells interpret those differently. Pick the block that matches your terminal.
-
-**macOS / Linux / Git Bash:**
-```bash
-curl -X 'GET' 'http://localhost:8000/api/quizzes?email=minhhd@univ.edu' -H 'accept: application/json'
-```
-
-**Windows `cmd.exe`** — replace single quotes with double quotes:
-```cmd
-curl -X GET "http://localhost:8000/api/quizzes?email=minhhd@univ.edu" -H "accept: application/json"
-```
-
-**Windows PowerShell** — `curl` is an alias for `Invoke-WebRequest`, which has different parameters. Use the real binary with `.exe`:
-```powershell
-curl.exe -X GET "http://localhost:8000/api/quizzes?email=minhhd@univ.edu" -H "accept: application/json"
-```
-
-Or use native PowerShell, which also parses the JSON for you:
-```powershell
-Invoke-RestMethod "http://localhost:8000/api/quizzes?email=minhhd@univ.edu" | ConvertTo-Json -Depth 5
-```
-
-> **Easiest of all:** skip curl entirely and use the Swagger UI. Click **Try it out** → **Execute**. It avoids every shell-quoting problem.
+Or you can use http://localhost:8000/api/quizzes?email=minhhd@univ.edu for quick check.
 
 ---
 
@@ -351,13 +323,13 @@ Git is not installed. Reinstall from <https://git-scm.com/downloads>. On Windows
 **`psql: command not found`.**
 PostgreSQL is not installed or not on PATH.
 - **Windows:** open a **new** terminal after installation.
-- **macOS:** make sure you added the `postgresql@18/bin` directory to `PATH` (see section 1.2) and re-ran `exec zsh`.
+- **macOS:** make sure you added the `postgresql@17/bin` directory to `PATH` (see section 1.2) and re-ran `exec zsh`.
 - **Linux:** reinstall via the apt commands in section 1.2.
 
 **`could not connect to server: Connection refused` when running `db/init_db.py`.**
 The PostgreSQL service is not running.
-- **Windows:** *Services* → `postgresql-x64-18` → **Start**.
-- **macOS:** `brew services start postgresql@18`
+- **Windows:** *Services* → `postgresql-x64-17` → **Start**.
+- **macOS:** `brew services start postgresql@17`
 - **Linux:** `sudo systemctl start postgresql`
 
 **`password authentication failed for user "postgres"`.**
@@ -386,12 +358,6 @@ The seed ran, but the query's `q.due_at > NOW()` filter excludes every quiz. You
 **`Address already in use: port 8000`.**
 Another process uses port 8000. Stop it, or edit `src/app.py` and change `port=8000` to `port=8001`, then visit `http://localhost:8001/docs`.
 
-**`curl: (3) URL rejected: Port number was not a decimal number`.**
-You are on Windows `cmd.exe` and used single quotes. Use double quotes — see the curl examples in section 7.
-
-**`Invoke-WebRequest : Cannot bind parameter 'Headers'`.**
-You are on Windows PowerShell, where `curl` is an alias for `Invoke-WebRequest`. Use `curl.exe` or `Invoke-RestMethod` — see the curl examples in section 7.
-
 **Browser shows `ERR_ADDRESS_INVALID` for `http://0.0.0.0:8000/`.**
 `0.0.0.0` is a bind address, not a hostname. Use `http://localhost:8000/docs` instead.
 
@@ -406,48 +372,10 @@ It drops and recreates every table.
 
 ## 9. Tested by
 
-| Tester | Machine | OS | Date | Time |
+| Tester | Team | Machine | OS | Time |
 |---|---|---|---|---|
-| Bùi Tuấn Anh | Thinkpad T14 | Window | 3/10/2026 | 15 minutes |
+| Nguyen Do Anh Duong (@aizun) | 02 | Lenovo LOQ | Windows 11 | 10 minutes (4/10/2026) |
 
 ---
-
-## 10. What is in the repository
-
-```
-root/
-├── db/
-│   ├── schema.sql.txt       # table definitions, enums, indexes
-│   ├── seed.sql.txt         # sample users, courses, quizzes, attempts
-│   ├── init_db.py           # create DB → apply schema → apply seed
-│   └── verify_db.py         # CLI check of the walking-skeleton query
-├── src/
-│   ├── app.py               # FastAPI app + uvicorn entry point
-│   ├── config/
-│   │   ├── settings.py      # reads .env once
-│   │   └── db.py            # single PostgreSQL connect() function
-│   ├── models/
-│   │   └── quiz.py          # Pydantic response models
-│   ├── repositories/
-│   │   └── quiz_repository.py   # SQL only
-│   ├── routes/
-│   │   ├── health_routes.py     # /health, /health/db
-│   │   └── quiz_routes.py       # /api/quizzes
-│   ├── services/
-│   │   └── quiz_service.py      # business rules (BR6)
-│   └── utils/
-│       └── placeholder.py
-├── tests/
-│   └── test_example.py
-├── docs/
-│   ├── design.md            # architecture and API table
-│   ├── SETUP.md             # this file
-│   ├── diagrams/
-│   └── images/
-├── .env.example             # template — copy to .env
-├── .gitignore               # excludes .env, .venv, __pycache__
-├── requirements.txt
-└── README.md
-```
 
 For architecture, module boundaries, and the full API table, see `docs/design.md` and `README.md`. 

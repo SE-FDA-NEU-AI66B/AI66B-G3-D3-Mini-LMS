@@ -114,7 +114,9 @@ All validation and permission checks live in the **service layer**, never in the
 
 **Route:** `GET /api/quizzes` · **Table read:** `quiz` (joined with `course`).
 
-**Seed size:** 3 courses, 2 lecturers, 10 students, 12 quizzes, 48 questions, 2 completed attempts with answers.
+**Total seed size:** 3 courses, 2 lecturers, 10 students, 12 quizzes, 48 questions, 2 completed attempts with answers.
+
+**How to know it worked:**
 
 ![wakin-skle](./images/waking-skeleton-test.png)
 
@@ -138,7 +140,9 @@ ORDER BY q.due_at;
 - **Linux (systemd):** `sudo systemctl stop postgresql`
 - **Windows:** `Window` + `R` → `services.msc` → stop the `postgresql-x64-{version}` service
 
-Then refresh the dashboard → FastAPI logs a `500 Internal Server Error`. Restart the service, refresh → the page recovers. This is the check described in `docs/SETUP.md`.
+Then refresh the page → FastAPI logs a `500 Internal Server Error`. Restart the service, refresh → the page recovers. This is the check described in `docs/SETUP.md`.
+
+**Tested by**: @aizun (Team 02) on a fresh Lenovo LOQ laptop, Windows 11, 10 minutes.
 
 **Full install steps:** see `docs/SETUP.md`.
 
