@@ -3,6 +3,19 @@
 
 ## 1. Architecture
 
+Mini-LMS is a **three-tier layered monolith**: a single FastAPI process serves HTML pages, applies business rules in services, and speaks SQL to PostgreSQL. A mock SSO sits outside our boundary as an external system. Every arrow below is labelled with what travels along it.
+
+![architecture](./images/architecture.png)
+
+| From → To | Payload | Purpose |
+|---|---|---|
+| Browser → FastAPI | HTTPS / HTML form POST | User interaction |
+| FastAPI → Mock SSO | OIDC-lite redirect to `/mock-sso/authorize` | Login (step 1) |
+| Mock SSO → FastAPI | `id_token` (JSON) + `code` to `/auth/callback` | Identity assertion (step 2) |
+| FastAPI → PostgreSQL | SQL over TCP on `localhost` | Read / write |
+| FastAPI → Browser | Rendered HTML + static CSS | Response |
+
+All validation and permission checks live in the **service layer**, never in the client.
 
 
 ## 2. Data model
@@ -103,7 +116,7 @@
 
 **Seed size:** 3 courses, 2 lecturers, 10 students, 12 quizzes, 48 questions, 2 completed attempts with answers.
 
-**Screenshot:** `docs/images/walking-skeleton.png` — the dashboard rendering 12 seeded quizzes.
+![wakin-skle](./images/waking-skeleton-test.png)
 
 **The SQL behind the page:**
 
@@ -123,7 +136,7 @@ ORDER BY q.due_at;
 
 - **macOS (Homebrew):** `brew services stop postgresql@{version}`
 - **Linux (systemd):** `sudo systemctl stop postgresql`
-- **Windows:** Services panel → stop the `postgresql-x64-{version}` service
+- **Windows:** `Window` + `R` → `services.msc` → stop the `postgresql-x64-{version}` service
 
 Then refresh the dashboard → FastAPI logs a `500 Internal Server Error`. Restart the service, refresh → the page recovers. This is the check described in `docs/SETUP.md`.
 
@@ -145,7 +158,7 @@ Two ADRs. Each records options, choice, why, and what would make us change our m
 
 **What would change our mind:** if the university provides a sandbox OIDC tenant reachable from anywhere, we swap the mock for the real IdP in Sprint 4. Only `src/services/auth_service.py` changes.
 
-### ADR-2 — Local PostgreSQL instead of SQLite (no Docker this sprint)
+### ADR-2 — Local PostgreSQL instead of SQLite
 
 **Options:** (a) SQLite file next to the code, (b) PostgreSQL installed locally, (c) PostgreSQL in a Docker container.
 
