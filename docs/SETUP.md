@@ -15,11 +15,11 @@ Install these before continuing. Versions matter.
 | Git | 2.40 | <https://git-scm.com/downloads> |
 | Python | 3.11 | <https://www.python.org/downloads/> |
 | PostgreSQL | 17 | <https://www.enterprisedb.com/downloads/postgres-postgresql-downloads> |
-|pgAdmin 4 (Optional) | 9.15 | <https://www.pgadmin.org/> |
+|pgAdmin 4 | 9.15 | <https://www.pgadmin.org/> |
 
 ### 1.1 Installing Homebrew (macOS only)
 
-If you are on macOS and do not already have Homebrew, install it first. This is the package manager that provides `postgresql@18` in the next step.
+If you are on macOS and do not already have Homebrew, install it first. This is the package manager that provides `postgresql@17` in the next step.
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -52,7 +52,7 @@ You should see something like `Homebrew 4.x.x`.
 **Windows** — download the installer from [here](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads) and run the wizard.
 - Set the `postgres` superuser password to `postgres` for this course (or your customized username & password).
 - Keep the default port `5432` (or your customized port).
-- The Windows service in `services.msc` is created as `postgresql-x64-18`.
+- The Windows service in `services.msc` is created as `postgresql-x64-17`.
 - **After installation, open a new terminal** so `psql` is on PATH.
 
 **macOS (Homebrew):**
@@ -62,7 +62,7 @@ brew services start postgresql@17
 
 # Homebrew does not symlink versioned formulas onto PATH by default:
 echo 'export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"' >> ~/.zshrc
-# Intel Mac: use /usr/local/opt/postgresql@18/bin instead of /opt/homebrew/...
+# Intel Mac: use /usr/local/opt/postgresql@17/bin instead of /opt/homebrew/...
 exec zsh
 ```
 Homebrew creates a superuser matching your macOS username with **no password**.
@@ -151,7 +151,7 @@ SESSION_SECRET=change-me
 SSO_MOCK_BASE_URL=http://localhost:8000/mock-sso
 ```
 
-If your machine has pgAdmin 4 installed, this is where you can your local database properties
+If your machine has pgAdmin 4 installed, this is where you can find your local database properties
 
 ![localdb](images/local-db-props.png)
 
