@@ -313,55 +313,6 @@ def delete_quiz(lecturer_email: str, quiz_id: int) -> None:
         repo.delete_quiz_cascade(conn, quiz_id)
 
 
-def publish_quiz(lecturer_email: str, quiz_id: int) -> QuizDetail:
-    """
-    Draft or Unpublished → Published (US05).
-
-    Guarded so a quiz cannot go live empty or already expired:
-      * at least one question must exist,
-      * the due date must still be in the future.
-    """
-    with db_config.connect() as conn:
-        lecturer_id = _require_lecturer(conn, lecturer_email)
-        quiz_row = _require_quiz_owner(conn, quiz_id, lecturer_id)
-
-        # Tuple layout from _require_quiz_owner:
-        #   0 quiz_id · 1 course_id · 2 code · 3 created_by · 4 title
-        #   5 time_limit_min · 6 due_at · 7 status · 8 answers_released
-        #   9 created_at · 10 lecturer_id
-        if quiz_row[7] == "Published":
-            raise ConflictError("Quiz is already published")
-
-        if not repo.list_questions(conn, quiz_id):
-            raise ValidationError("Cannot publish a quiz with no questions")
-
-        if quiz_row[6] <= _now_utc_naive():
-            raise ValidationError("Cannot publish a quiz whose due date has passed")
-
-        repo.set_quiz_status(conn, quiz_id, "Published")
-        quiz_row = repo.get_quiz(conn, quiz_id)
-        return _row_to_detail(quiz_row, conn)
-
-
-def unpublish_quiz(lecturer_email: str, quiz_id: int) -> QuizDetail:
-    """
-    Published → Unpublished (US05).
-
-    Existing attempts are preserved: the schema has no cascade from quiz
-    to attempt, and this function never touches the attempt table.
-    """
-    with db_config.connect() as conn:
-        lecturer_id = _require_lecturer(conn, lecturer_email)
-        quiz_row = _require_quiz_owner(conn, quiz_id, lecturer_id)
-
-        if quiz_row[7] != "Published":
-            raise ConflictError("Only published quizzes can be unpublished")
-
-        repo.set_quiz_status(conn, quiz_id, "Unpublished")
-        quiz_row = repo.get_quiz(conn, quiz_id)
-        return _row_to_detail(quiz_row, conn)
-
-
 def list_courses(lecturer_email: str) -> list[CourseSummary]:
     with db_config.connect() as conn:
         lecturer_id = _require_lecturer(conn, lecturer_email)

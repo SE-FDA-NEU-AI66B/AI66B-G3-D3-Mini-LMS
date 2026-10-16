@@ -89,23 +89,6 @@ def delete_quiz(
     service.delete_quiz(email, quiz_id)
     return QuizDeleteResponse(deleted=True, quiz_id=quiz_id)
 
-@router.post(
-    "/quizzes/{quiz_id}/publish",
-    response_model=QuizDetail,
-    summary="Publish a quiz so students can see it (US05)",
-)
-def publish_quiz(quiz_id: int, email: str = Depends(current_email)) -> QuizDetail:
-    return service.publish_quiz(email, quiz_id)
-
-
-@router.post(
-    "/quizzes/{quiz_id}/unpublish",
-    response_model=QuizDetail,
-    summary="Unpublish a quiz; existing attempts are preserved (US05)",
-)
-def unpublish_quiz(quiz_id: int, email: str = Depends(current_email)) -> QuizDetail:
-    return service.unpublish_quiz(email, quiz_id)
-
 
 # ------------------------------ questions -----------------------------
 

@@ -50,7 +50,6 @@
     mcqOptions:     $('mcq-options'),
     questionError:  $('question-error'),
     questionSaveBtn:$('question-save-btn'),
-    publishBtn:     $('publish-btn'),
   };
 
   /* ---------------------------- helpers ----------------------------- */
@@ -130,26 +129,6 @@
     els.metaHint.textContent = 'Created as Draft. Add questions next.';
   }
 
-  function updateStatusControls(status) {
-    els.statusBadge.hidden    = false;
-    els.statusBadge.className = 'badge ' + statusClass(status);
-    els.statusBadge.textContent = status;
-
-    if (status === 'Draft' || status === 'Unpublished') {
-      els.publishBtn.hidden       = false;
-      els.publishBtn.className    = 'btn btn--primary btn--sm';
-      els.publishBtn.textContent  = status === 'Draft' ? 'Publish' : 'Re-publish';
-      els.publishBtn.dataset.act  = 'publish';
-    } else if (status === 'Published') {
-      els.publishBtn.hidden       = false;
-      els.publishBtn.className    = 'btn btn--ghost btn--sm';
-      els.publishBtn.textContent  = 'Unpublish';
-      els.publishBtn.dataset.act  = 'unpublish';
-    } else {
-      els.publishBtn.hidden = true;
-    }
-  }
-
   async function loadQuiz() {
     currentQuiz = await Api.get(`/api/instructor/quizzes/${QUIZ_ID}`);
 
@@ -161,7 +140,9 @@
     els.timeLimit.value       = currentQuiz.time_limit_min;
     els.dueAt.value           = toLocalInputValue(currentQuiz.due_at);
 
-    updateStatusControls(currentQuiz.status);
+    els.statusBadge.hidden    = false;
+    els.statusBadge.className = 'badge ' + statusClass(currentQuiz.status);
+    els.statusBadge.textContent = currentQuiz.status;
 
     els.questionsCard.hidden  = false;
     els.saveMetaBtn.textContent = 'Save changes';
@@ -216,26 +197,6 @@
       showAlert('danger', err.message);
     } finally {
       els.saveMetaBtn.disabled = false;
-    }
-  });
-
-  els.publishBtn.addEventListener('click', async () => {
-    const action = els.publishBtn.dataset.act;
-    if (!action) return;
-    const verb = action === 'publish' ? 'publish' : 'unpublish';
-
-    if (!window.confirm(`Are you sure you want to ${verb} this quiz?`)) return;
-
-    els.publishBtn.disabled = true;
-    try {
-      await Api.post(`/api/instructor/quizzes/${QUIZ_ID}/${action}`);
-      await loadQuiz();
-      showAlert('success',
-        `Quiz ${action === 'publish' ? 'published' : 'unpublished'}.`);
-    } catch (err) {
-      showAlert('danger', err.message);
-    } finally {
-      els.publishBtn.disabled = false;
     }
   });
 
