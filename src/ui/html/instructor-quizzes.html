@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini-LMS · My Quizzes</title>
+  <link rel="stylesheet" href="/ui/css/mini-lms.css" />
+</head>
+
+<body
+  data-role="lecturer"
+  data-user-name="Pham Thi Lan"
+  data-user-email="lanpt@univ.edu"
+  data-active="quizzes"
+  data-brand-sub="Lecturer">
+
+  <div class="app-shell">
+    <div class="app-body">
+      <main class="app-main">
+        <div class="app-container">
+
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">My quizzes</h1>
+              <p class="page-sub">Create and manage quizzes for the courses you teach.</p>
+            </div>
+            <a class="btn btn--primary" href="/ui/html/instructor-quiz-edit.html">
+              + New quiz
+            </a>
+          </div>
+
+          <div id="alert-area"></div>
+
+          <section class="card">
+            <div class="card__head">
+              <div>
+                <h2 class="card__title">All quizzes</h2>
+                <p class="card__hint">Draft quizzes are visible only to you.</p>
+              </div>
+              <button class="btn btn--ghost btn--sm" type="button" id="refresh-btn">
+                Refresh
+              </button>
+            </div>
+            <div id="list-area">
+              <div class="state">
+                <span class="spinner" aria-hidden="true"></span>
+                <div class="state__title u-mt-2">Loading quizzes…</div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/ui/js/layout.js"></script>
+  <script src="/ui/js/api.js"></script>
+  <script src="/ui/js/instructor-quizzes.js"></script>
+  <script>
+    // Reflect the current session email in the top bar before layout renders.
+    document.body.dataset.userEmail = window.MiniLMS.Api.getEmail();
+    Layout.init();
+  </script>
+</body>
+</html>
