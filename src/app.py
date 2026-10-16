@@ -21,6 +21,7 @@ if str(ROOT) not in sys.path:
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles 
 
 from src.config import settings
 from src.routes import health_routes, quiz_routes
@@ -34,6 +35,11 @@ app = FastAPI(
         "See docs/design.md for the full architecture and API table."
     ),
 )
+
+# ---- Static UI assets ------------------------------------------------
+app.mount("/ui/css",  StaticFiles(directory="src/ui/css"),  name="ui-css")
+app.mount("/ui/js",   StaticFiles(directory="src/ui/js"),   name="ui-js")
+app.mount("/ui/html", StaticFiles(directory="src/ui/html", html=True), name="ui-html")
 
 app.include_router(health_routes.router)
 app.include_router(quiz_routes.router)
@@ -55,8 +61,7 @@ if __name__ == "__main__":
     # 0.0.0.0 is not a browsable host, so print the clickable URLs first.
     print()
     print("Mini-LMS is starting. Open one of these in your browser:")
-    print("  http://localhost:8000/")
-    print("  http://127.0.0.1:8000/")
+    print("  http://localhost:8000/ui/html/demo.html")
     print("  http://localhost:8000/api/quizzes?email=minhhd@univ.edu")
     print("  API docs: http://localhost:8000/docs")
     print()

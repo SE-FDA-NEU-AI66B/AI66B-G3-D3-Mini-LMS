@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini-LMS · Dashboard</title>
+  <link rel="stylesheet" href="/ui/css/mini-lms.css" />
+</head>
+
+<body
+  data-role="student"
+  data-user-name="Ha Duc Minh"
+  data-user-email="minhhd@univ.edu"
+  data-active="dashboard"
+  data-brand-sub="Student">
+
+  <div class="app-shell">
+    <div class="app-body">
+      <main class="app-main">
+        <div class="app-container">
+
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Dashboard</h1>
+              <p class="page-sub">Quizzes available to you right now.</p>
+            </div>
+            <button class="btn btn--ghost" type="button">Refresh</button>
+          </div>
+
+          <div class="alert alert--info" role="status">
+            <svg class="alert__icon" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 8v5M12 16.5v.01"/>
+            </svg>
+            <div>You have <strong>6 upcoming quizzes</strong> across 2 courses.</div>
+          </div>
+
+          <section class="card">
+            <div class="card__head">
+              <div>
+                <h2 class="card__title">Available quizzes</h2>
+                <p class="card__hint">Only quizzes with a future due date are listed.</p>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Quiz</th>
+                    <th>Course</th>
+                    <th>Due</th>
+                    <th class="num">Limit</th>
+                    <th style="text-align:right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>ACC101 Weekly Quiz 1</td>
+                    <td><span class="badge badge--student"><span class="badge__dot"></span>ACC101</span></td>
+                    <td class="num">2026-11-01 23:59</td>
+                    <td class="num">15 min</td>
+                    <td class="u-text-right"><a class="btn btn--primary btn--sm" href="#">Take</a></td>
+                  </tr>
+                  <tr>
+                    <td>ACC101 Midterm Quiz</td>
+                    <td><span class="badge badge--student"><span class="badge__dot"></span>ACC101</span></td>
+                    <td class="num">2026-11-15 23:59</td>
+                    <td class="num">30 min</td>
+                    <td class="u-text-right"><a class="btn btn--primary btn--sm" href="#">Take</a></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="card__foot u-text-muted u-text-sm">
+              Showing <strong>2</strong> of <strong>6</strong> quizzes.
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/ui/js/layout.js"></script>
+  <script>
+    Layout.init();
+  </script>
+</body>
+</html>
