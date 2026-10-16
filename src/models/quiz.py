@@ -146,3 +146,18 @@ class QuizDeleteResponse(BaseModel):
 class QuestionDeleteResponse(BaseModel):
     deleted: bool
     question_id: int
+
+# ----------------------------------------------------------------------
+# Instructor — course list (supporting US01)
+# ----------------------------------------------------------------------
+
+class CourseSummary(BaseModel):
+    course_id: int
+    code: str
+    name: str
+
+
+class InstructorCourseListResponse(BaseModel):
+    lecturer_email: str
+    count: int
+    courses: list[CourseSummary]

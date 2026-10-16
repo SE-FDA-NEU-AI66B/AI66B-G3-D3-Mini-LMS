@@ -15,6 +15,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, status
 
 from src.models.quiz import (
+    InstructorCourseListResponse,
     InstructorQuizListResponse,
     QuestionCreateRequest,
     QuestionDeleteResponse,
@@ -27,7 +28,6 @@ from src.models.quiz import (
 )
 from src.routes.deps import current_email
 from src.services import instructor_quiz_service as service
-
 
 router = APIRouter(prefix="/api/instructor", tags=["instructor-quizzes"])
 
@@ -128,3 +128,17 @@ def delete_question(
 ) -> QuestionDeleteResponse:
     service.delete_question(email, quiz_id, question_id)
     return QuestionDeleteResponse(deleted=True, question_id=question_id)
+
+
+# ------------------------------- courses ------------------------------
+
+@router.get(
+    "/courses",
+    response_model=InstructorCourseListResponse,
+    summary="List courses assigned to the calling lecturer",
+)
+def list_courses(email: str = Depends(current_email)) -> InstructorCourseListResponse:
+    courses = service.list_courses(email)
+    return InstructorCourseListResponse(
+        lecturer_email=email, count=len(courses), courses=courses
+    )

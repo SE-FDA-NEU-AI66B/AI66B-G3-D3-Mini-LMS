@@ -39,6 +39,22 @@ def get_course(conn: psycopg.Connection, course_id: int) -> tuple | None:
         return cur.fetchone()
 
 
+def list_courses_for_lecturer(
+    conn: psycopg.Connection, lecturer_id: int
+) -> list[tuple]:
+    """Return (course_id, code, name) for courses assigned to this lecturer."""
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT course_id, code, name
+              FROM course
+             WHERE lecturer_id = %s
+             ORDER BY code
+            """,
+            (lecturer_id,),
+        )
+        return cur.fetchall()
+
 # ----------------------------------------------------------------------
 # Quizzes
 # ----------------------------------------------------------------------

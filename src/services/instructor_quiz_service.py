@@ -29,6 +29,7 @@ import psycopg
 
 from src.config import db as db_config
 from src.models.quiz import (
+    CourseSummary,
     OptionResponse,
     QuestionCreateRequest,
     QuestionResponse,
@@ -39,7 +40,6 @@ from src.models.quiz import (
     QuizUpdateRequest,
 )
 from src.repositories import instructor_quiz_repository as repo
-
 
 # ----------------------------------------------------------------------
 # Errors — the route layer maps status_code + message to HTTP
@@ -311,6 +311,13 @@ def delete_quiz(lecturer_email: str, quiz_id: int) -> None:
                 f"Quiz has {attempts} student attempt(s) and cannot be deleted"
             )
         repo.delete_quiz_cascade(conn, quiz_id)
+
+
+def list_courses(lecturer_email: str) -> list[CourseSummary]:
+    with db_config.connect() as conn:
+        lecturer_id = _require_lecturer(conn, lecturer_email)
+        rows = repo.list_courses_for_lecturer(conn, lecturer_id)
+    return [CourseSummary(course_id=r[0], code=r[1], name=r[2]) for r in rows]
 
 
 # ------------------------------ questions -----------------------------
