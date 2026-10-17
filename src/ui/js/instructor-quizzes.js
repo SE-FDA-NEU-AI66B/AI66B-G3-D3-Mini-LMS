@@ -77,6 +77,9 @@
           <span class="badge ${statusClass(q.status)}">
             <span class="badge__dot"></span>${esc(q.status)}
           </span>
+          ${q.status === 'Draft' && q.publish_at
+            ? `<div class="u-text-sm u-text-muted">⏰ ${esc(fmtDateTime(q.publish_at))}</div>`
+            : ''}
         </td>
         <td class="num">${q.question_count}</td>
         <td class="u-text-right">${actionButtons(q)}</td>
@@ -108,14 +111,15 @@
 
     let statusBtn = '';
     if (q.status === 'Draft') {
+      const label = q.publish_at ? 'Publish now' : 'Publish';
       statusBtn =
         `<button class="btn btn--primary btn--sm" type="button" ` +
-        `data-action="publish-quiz" data-quiz-id="${q.quiz_id}">Publish</button>`;
+        `data-action="publish-quiz" data-quiz-id="${q.quiz_id}">${label}</button>`;
     } else if (q.status === 'Unpublished') {
       statusBtn =
         `<button class="btn btn--primary btn--sm" type="button" ` +
         `data-action="publish-quiz" data-quiz-id="${q.quiz_id}">Re-publish</button>`;
-    } else { // Published
+    } else {
       statusBtn =
         `<button class="btn btn--ghost btn--sm" type="button" ` +
         `data-action="unpublish-quiz" data-quiz-id="${q.quiz_id}">Unpublish</button>`;

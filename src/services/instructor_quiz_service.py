@@ -40,6 +40,7 @@ from src.models.quiz import (
     QuizUpdateRequest,
 )
 from src.repositories import instructor_quiz_repository as repo
+from src.repositories import quiz_repository
 
 # ----------------------------------------------------------------------
 # Errors — the route layer maps status_code + message to HTTP
@@ -113,6 +114,17 @@ def _validate_due_at(raw: datetime, *, must_be_future: bool) -> datetime:
     if must_be_future and dt <= _now_utc_naive():
         raise ValidationError("Due date must be in the future")
     return dt
+
+
+def _validate_publish_at(
+    raw: datetime | None, due_at: datetime
+) -> datetime | None:
+    if raw is None:
+        return None
+    p = _normalise_dt(raw)
+    if p >= due_at:
+        raise ValidationError("publish_at must be strictly before due_at (BR6)")
+    return p
 
 
 def _validate_mcq_options(options) -> None:
@@ -211,6 +223,7 @@ def _row_to_summary(row: tuple) -> QuizSummary:
         status=row[6],
         created_at=row[7],
         question_count=row[8],
+        publish_at=row[9],
     )
 
 
@@ -246,6 +259,7 @@ def _row_to_detail(quiz_row: tuple, conn: psycopg.Connection) -> QuizDetail:
         status=quiz_row[7],
         answers_released=quiz_row[8],
         created_at=quiz_row[9],
+        publish_at=quiz_row[11],
         questions=questions,
     )
 
@@ -257,6 +271,7 @@ def _row_to_detail(quiz_row: tuple, conn: psycopg.Connection) -> QuizDetail:
 def list_quizzes(lecturer_email: str) -> list[QuizSummary]:
     with db_config.connect() as conn:
         lecturer_id = _require_lecturer(conn, lecturer_email)
+        quiz_repository.apply_scheduled_publishes(conn)
         rows = repo.list_quizzes_for_lecturer(conn, lecturer_id)
     return [_row_to_summary(r) for r in rows]
 
@@ -264,6 +279,7 @@ def list_quizzes(lecturer_email: str) -> list[QuizSummary]:
 def get_quiz(lecturer_email: str, quiz_id: int) -> QuizDetail:
     with db_config.connect() as conn:
         lecturer_id = _require_lecturer(conn, lecturer_email)
+        quiz_repository.apply_scheduled_publishes(conn)
         quiz_row = _require_quiz_owner(conn, quiz_id, lecturer_id)
         return _row_to_detail(quiz_row, conn)
 
@@ -273,13 +289,18 @@ def create_quiz(lecturer_email: str, payload: QuizCreateRequest) -> QuizDetail:
     title = _validate_title(payload.title)
     time_limit = _validate_time_limit(payload.time_limit_min)
     due_at = _validate_due_at(payload.due_at, must_be_future=True)
+    publish_at = _validate_publish_at(payload.publish_at, due_at)
 
     with db_config.connect() as conn:
         lecturer_id = _require_lecturer(conn, lecturer_email)
         _require_course_owner(conn, payload.course_id, lecturer_id)
         quiz_id = repo.insert_quiz(
-            conn, payload.course_id, lecturer_id, title, time_limit, due_at
+            conn, payload.course_id, lecturer_id,
+            title, time_limit, due_at, publish_at,
         )
+        # If publish_at was in the past and questions somehow exist,
+        # reflect reality immediately; otherwise this is a no-op.
+        quiz_repository.apply_scheduled_publishes(conn)
         quiz_row = repo.get_quiz(conn, quiz_id)
         return _row_to_detail(quiz_row, conn)
 
@@ -292,11 +313,13 @@ def update_quiz(
     # An edit may legitimately move the due date in the past for record-keeping
     # purposes, so we do not force it to stay in the future here.
     due_at = _normalise_dt(payload.due_at)
+    publish_at = _validate_publish_at(payload.publish_at, due_at)
 
     with db_config.connect() as conn:
         lecturer_id = _require_lecturer(conn, lecturer_email)
         _require_quiz_owner(conn, quiz_id, lecturer_id)
-        repo.update_quiz(conn, quiz_id, title, time_limit, due_at)
+        repo.update_quiz(conn, quiz_id, title, time_limit, due_at, publish_at)
+        quiz_repository.apply_scheduled_publishes(conn)
         quiz_row = repo.get_quiz(conn, quiz_id)
         return _row_to_detail(quiz_row, conn)
 
@@ -323,6 +346,7 @@ def publish_quiz(lecturer_email: str, quiz_id: int) -> QuizDetail:
     """
     with db_config.connect() as conn:
         lecturer_id = _require_lecturer(conn, lecturer_email)
+        quiz_repository.apply_scheduled_publishes(conn)
         quiz_row = _require_quiz_owner(conn, quiz_id, lecturer_id)
 
         # Tuple layout from _require_quiz_owner:
@@ -352,6 +376,7 @@ def unpublish_quiz(lecturer_email: str, quiz_id: int) -> QuizDetail:
     """
     with db_config.connect() as conn:
         lecturer_id = _require_lecturer(conn, lecturer_email)
+        quiz_repository.apply_scheduled_publishes(conn)
         quiz_row = _require_quiz_owner(conn, quiz_id, lecturer_id)
 
         if quiz_row[7] != "Published":

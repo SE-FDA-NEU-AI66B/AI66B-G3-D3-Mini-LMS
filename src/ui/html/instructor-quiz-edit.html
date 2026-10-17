@@ -66,7 +66,16 @@
                   <div class="field__help">Between 5 and 120.</div>
                 </div>
 
-                <div class="field col-8">
+                <div class="field col-4">
+                  <label for="publish_at">Auto-publish at</label>
+                  <input class="input" id="publish_at" name="publish_at"
+                         type="datetime-local" />
+                  <div class="field__help">
+                    Optional. Leave blank to publish manually.
+                  </div>
+                </div>
+
+                <div class="field col-4">
                   <label for="due_at">Due date <span class="req">*</span></label>
                   <input class="input" id="due_at" name="due_at"
                          type="datetime-local" required />

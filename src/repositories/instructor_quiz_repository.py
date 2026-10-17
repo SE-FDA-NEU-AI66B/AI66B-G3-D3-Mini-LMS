@@ -61,7 +61,7 @@ def list_courses_for_lecturer(
 _QUIZ_SELECT = """
 SELECT q.quiz_id, q.course_id, c.code, q.created_by, q.title,
        q.time_limit_min, q.due_at, q.status, q.answers_released,
-       q.created_at, c.lecturer_id
+       q.created_at, c.lecturer_id, q.publish_at
 FROM quiz q
 JOIN course c ON c.course_id = q.course_id
 """
@@ -87,7 +87,8 @@ def list_quizzes_for_lecturer(
             """
             SELECT q.quiz_id, q.course_id, c.code, q.title, q.time_limit_min,
                    q.due_at, q.status, q.created_at,
-                   (SELECT COUNT(*) FROM question WHERE quiz_id = q.quiz_id)
+                   (SELECT COUNT(*) FROM question WHERE quiz_id = q.quiz_id),
+                   q.publish_at
             FROM quiz q
             JOIN course c ON c.course_id = q.course_id
             WHERE c.lecturer_id = %s
@@ -105,17 +106,19 @@ def insert_quiz(
     title: str,
     time_limit_min: int,
     due_at: datetime,
+    publish_at: datetime,
 ) -> int:
     """Insert a Draft quiz and return its new quiz_id."""
     with conn.cursor() as cur:
         cur.execute(
             """
             INSERT INTO quiz
-                (course_id, created_by, title, time_limit_min, due_at, status)
-            VALUES (%s, %s, %s, %s, %s, 'Draft')
+                (course_id, created_by, title, time_limit_min, due_at,
+                 publish_at, status)
+            VALUES (%s, %s, %s, %s, %s, %s, 'Draft')
             RETURNING quiz_id
             """,
-            (course_id, created_by, title, time_limit_min, due_at),
+            (course_id, created_by, title, time_limit_min, due_at, publish_at),
         )
         return cur.fetchone()[0]
 
@@ -126,15 +129,17 @@ def update_quiz(
     title: str,
     time_limit_min: int,
     due_at: datetime,
+    publish_at: datetime,
 ) -> None:
     with conn.cursor() as cur:
         cur.execute(
             """
             UPDATE quiz
-               SET title = %s, time_limit_min = %s, due_at = %s
+               SET title = %s, time_limit_min = %s,
+                   due_at = %s, publish_at = %s
              WHERE quiz_id = %s
             """,
-            (title, time_limit_min, due_at, quiz_id),
+            (title, time_limit_min, due_at, publish_at, quiz_id),
         )
 
 
@@ -170,7 +175,7 @@ def set_quiz_status(conn: psycopg.Connection, quiz_id: int, status: str) -> None
     """Change a quiz's status. Caller is responsible for validating the transition."""
     with conn.cursor() as cur:
         cur.execute(
-            "UPDATE quiz SET status = %s WHERE quiz_id = %s",
+            "UPDATE quiz SET status = %s, publish_at = NULL WHERE quiz_id = %s",
             (status, quiz_id),
         )
 

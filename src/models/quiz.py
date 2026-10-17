@@ -45,12 +45,17 @@ class QuizCreateRequest(BaseModel):
     title: str = Field(..., description="Quiz title (required)")
     time_limit_min: int = Field(..., description="5–120 minutes (BR2)")
     due_at: datetime = Field(..., description="Deadline; must be in the future")
+    publish_at: datetime | None = Field(
+        default=None,
+        description="Scheduled auto-publish moment. Null = manual publish only.",
+    )
 
 
 class QuizUpdateRequest(BaseModel):
     title: str
     time_limit_min: int
     due_at: datetime
+    publish_at: datetime | None = None
 
 
 class QuizSummary(BaseModel):
@@ -62,6 +67,7 @@ class QuizSummary(BaseModel):
     title: str
     time_limit_min: int
     due_at: datetime
+    publish_at: datetime | None = None
     status: str
     question_count: int
     created_at: datetime
@@ -132,6 +138,7 @@ class QuizDetail(BaseModel):
     title: str
     time_limit_min: int
     due_at: datetime
+    publish_at: datetime | None = None
     status: str
     answers_released: bool
     created_at: datetime

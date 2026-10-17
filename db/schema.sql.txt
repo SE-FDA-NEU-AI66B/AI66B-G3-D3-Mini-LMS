@@ -44,6 +44,7 @@ CREATE TABLE quiz (
     title            VARCHAR(255) NOT NULL,
     time_limit_min   INTEGER NOT NULL CHECK (time_limit_min BETWEEN 5 AND 120),
     due_at           TIMESTAMP NOT NULL,
+    publish_at       TIMESTAMP,           -- NULL = manual publish only
     status           quiz_status NOT NULL DEFAULT 'Draft',
     answers_released BOOLEAN NOT NULL DEFAULT FALSE,
     created_at       TIMESTAMP NOT NULL DEFAULT NOW()
