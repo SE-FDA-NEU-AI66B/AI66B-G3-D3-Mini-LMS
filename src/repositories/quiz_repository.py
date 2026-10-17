@@ -10,7 +10,6 @@ from __future__ import annotations
 from src.config import db as db_config
 from src.models.quiz import QuizListItem
 
-
 WALKING_SKELETON_SQL = """
 SELECT q.quiz_id,
        q.title,
@@ -28,6 +27,33 @@ WHERE q.status = 'Published'
 ORDER BY q.due_at;
 """
 
+SCHEDULED_PUBLISH_SQL = """
+UPDATE quiz q
+   SET status = 'Published'
+ WHERE q.status IN ('Draft', 'Unpublished')
+   AND q.publish_at IS NOT NULL
+   AND q.publish_at <= NOW()
+   AND EXISTS (SELECT 1 FROM question qq WHERE qq.quiz_id = q.quiz_id)
+"""
+
+
+def apply_scheduled_publishes(conn) -> int:
+    """
+    Flip every Draft/Unpublished quiz whose publish_at is due to Published.
+
+    Two guards:
+      * `EXISTS question` — never publish an empty quiz (mirrors US05's
+        manual-publish rule that a quiz must have at least one question).
+      * `publish_at <= NOW()` — only quizzes whose scheduled moment has
+        arrived.
+
+    Called at the top of every read/mutation on quiz state so the DB row
+    is always honest — no background worker required.
+    """
+    with conn.cursor() as cur:
+        cur.execute(SCHEDULED_PUBLISH_SQL)
+        return cur.rowcount
+
 
 def find_visible_quizzes(student_email: str) -> list[QuizListItem]:
     """
@@ -37,9 +63,13 @@ def find_visible_quizzes(student_email: str) -> list[QuizListItem]:
     The repository does not decide this — the WHERE clause simply applies
     the rule that the service has already confirmed is in force.
     """
-    with db_config.connect() as conn, conn.cursor() as cur:
-        cur.execute(WALKING_SKELETON_SQL, (student_email,))
-        rows = cur.fetchall()
+    with db_config.connect() as conn:
+        # Any scheduled-publish quizzes whose time has come are flipped
+        # here, in the same transaction as the visibility SELECT.
+        apply_scheduled_publishes(conn)
+        with conn.cursor() as cur:
+            cur.execute(WALKING_SKELETON_SQL, (student_email,))
+            rows = cur.fetchall()
 
     return [
         QuizListItem(

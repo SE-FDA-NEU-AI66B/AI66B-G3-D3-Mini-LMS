@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  const { Api, esc, toLocalInputValue } = window.MiniLMS;
+    const { Api, esc, toLocalInputValue, fmtDateTime } = window.MiniLMS;
 
   /* --------------------------- page state --------------------------- */
 
@@ -29,6 +29,7 @@
     courseSelect:   $('course_id'),
     title:          $('title'),
     timeLimit:      $('time_limit_min'),
+    publishAt:      $('publish_at'),
     dueAt:          $('due_at'),
     statusBadge:    $('status-badge'),
     saveMetaBtn:    $('save-meta-btn'),
@@ -50,6 +51,7 @@
     mcqOptions:     $('mcq-options'),
     questionError:  $('question-error'),
     questionSaveBtn:$('question-save-btn'),
+    publishBtn:     $('publish-btn'),
   };
 
   /* ---------------------------- helpers ----------------------------- */
@@ -127,6 +129,32 @@
     els.questionsCard.hidden  = true;
     els.saveMetaBtn.textContent = 'Create quiz';
     els.metaHint.textContent = 'Created as Draft. Add questions next.';
+    els.publishAt.value = '';
+  }
+
+  function updateStatusControls(status) {
+    els.statusBadge.hidden    = false;
+    els.statusBadge.className = 'badge ' + statusClass(status);
+    els.statusBadge.textContent = status;
+
+    // Scheduled hint on Draft quizzes.
+    if (status === 'Draft' && currentQuiz && currentQuiz.publish_at) {
+      els.statusBadge.textContent =
+        `Draft · scheduled ${fmtDateTime(currentQuiz.publish_at)}`;
+    }
+    if (status === 'Draft' || status === 'Unpublished') {
+      els.publishBtn.hidden       = false;
+      els.publishBtn.className    = 'btn btn--primary btn--sm';
+      els.publishBtn.textContent  = status === 'Draft' ? 'Publish' : 'Re-publish';
+      els.publishBtn.dataset.act  = 'publish';
+    } else if (status === 'Published') {
+      els.publishBtn.hidden       = false;
+      els.publishBtn.className    = 'btn btn--ghost btn--sm';
+      els.publishBtn.textContent  = 'Unpublish';
+      els.publishBtn.dataset.act  = 'unpublish';
+    } else {
+      els.publishBtn.hidden = true;
+    }
   }
 
   async function loadQuiz() {
@@ -139,10 +167,9 @@
     els.title.value           = currentQuiz.title;
     els.timeLimit.value       = currentQuiz.time_limit_min;
     els.dueAt.value           = toLocalInputValue(currentQuiz.due_at);
+    els.publishAt.value       = currentQuiz.publish_at ? toLocalInputValue(currentQuiz.publish_at) : '';
 
-    els.statusBadge.hidden    = false;
-    els.statusBadge.className = 'badge ' + statusClass(currentQuiz.status);
-    els.statusBadge.textContent = currentQuiz.status;
+    updateStatusControls(currentQuiz.status);
 
     els.questionsCard.hidden  = false;
     els.saveMetaBtn.textContent = 'Save changes';
@@ -159,6 +186,7 @@
     const title     = els.title.value.trim();
     const timeLimit = Number(els.timeLimit.value);
     const dueAt     = els.dueAt.value;
+    const publishAt = els.publishAt.value || null;
 
     if (!title) {
       return showAlert('danger', 'Title is required.');
@@ -169,6 +197,9 @@
     if (!dueAt) {
       return showAlert('danger', 'Due date is required.');
     }
+    if (publishAt && dueAt && new Date(publishAt) >= new Date(dueAt)) {
+      return showAlert('danger', 'Auto-publish must be before the due date.');
+    }
 
     els.saveMetaBtn.disabled = true;
     try {
@@ -177,6 +208,7 @@
           title,
           time_limit_min: timeLimit,
           due_at: dueAt,
+          publish_at: publishAt,
         });
         await loadQuiz();
         showAlert('success', 'Quiz updated.');
@@ -189,6 +221,7 @@
           title,
           time_limit_min: timeLimit,
           due_at: dueAt,
+          publish_at: publishAt,
         });
         window.location.href = editorUrl(created.quiz_id);
         return;
@@ -197,6 +230,26 @@
       showAlert('danger', err.message);
     } finally {
       els.saveMetaBtn.disabled = false;
+    }
+  });
+
+  els.publishBtn.addEventListener('click', async () => {
+    const action = els.publishBtn.dataset.act;
+    if (!action) return;
+    const verb = action === 'publish' ? 'publish' : 'unpublish';
+
+    if (!window.confirm(`Are you sure you want to ${verb} this quiz?`)) return;
+
+    els.publishBtn.disabled = true;
+    try {
+      await Api.post(`/api/instructor/quizzes/${QUIZ_ID}/${action}`);
+      await loadQuiz();
+      showAlert('success',
+        `Quiz ${action === 'publish' ? 'published' : 'unpublished'}.`);
+    } catch (err) {
+      showAlert('danger', err.message);
+    } finally {
+      els.publishBtn.disabled = false;
     }
   });
 

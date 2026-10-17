@@ -35,7 +35,11 @@
           <section class="card" id="meta-card">
             <div class="card__head">
               <h2 class="card__title">Quiz details</h2>
-              <span class="badge badge--draft" id="status-badge" hidden></span>
+              <div class="u-flex u-gap-2 u-items-center">
+                <span class="badge badge--draft" id="status-badge" hidden></span>
+                <button class="btn btn--primary btn--sm" type="button"
+                        id="publish-btn" hidden></button>
+              </div>
             </div>
 
             <div class="card__body">
@@ -62,7 +66,16 @@
                   <div class="field__help">Between 5 and 120.</div>
                 </div>
 
-                <div class="field col-8">
+                <div class="field col-4">
+                  <label for="publish_at">Auto-publish at</label>
+                  <input class="input" id="publish_at" name="publish_at"
+                         type="datetime-local" />
+                  <div class="field__help">
+                    Optional. Leave blank to publish manually.
+                  </div>
+                </div>
+
+                <div class="field col-4">
                   <label for="due_at">Due date <span class="req">*</span></label>
                   <input class="input" id="due_at" name="due_at"
                          type="datetime-local" required />
