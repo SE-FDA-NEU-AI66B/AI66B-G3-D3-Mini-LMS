@@ -13,7 +13,6 @@ from datetime import datetime
 
 import psycopg
 
-
 # ----------------------------------------------------------------------
 # Users & courses — ownership lookups
 # ----------------------------------------------------------------------
@@ -165,6 +164,15 @@ def delete_quiz_cascade(conn: psycopg.Connection, quiz_id: int) -> None:
         )
         cur.execute("DELETE FROM question WHERE quiz_id = %s", (quiz_id,))
         cur.execute("DELETE FROM quiz     WHERE quiz_id = %s", (quiz_id,))
+
+
+def set_quiz_status(conn: psycopg.Connection, quiz_id: int, status: str) -> None:
+    """Change a quiz's status. Caller is responsible for validating the transition."""
+    with conn.cursor() as cur:
+        cur.execute(
+            "UPDATE quiz SET status = %s WHERE quiz_id = %s",
+            (status, quiz_id),
+        )
 
 
 # ----------------------------------------------------------------------

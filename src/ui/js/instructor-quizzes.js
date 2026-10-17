@@ -79,14 +79,7 @@
           </span>
         </td>
         <td class="num">${q.question_count}</td>
-        <td class="u-text-right">
-          <a class="btn btn--ghost btn--sm"
-             href="/ui/html/instructor-quiz-edit.html?quiz_id=${q.quiz_id}">Edit</a>
-          <button class="btn btn--danger btn--sm" type="button"
-                  data-action="delete-quiz"
-                  data-quiz-id="${q.quiz_id}"
-                  data-quiz-title="${esc(q.title)}">Delete</button>
-        </td>
+        <td class="u-text-right">${actionButtons(q)}</td>
       </tr>`).join('');
 
     listArea.innerHTML =
@@ -104,6 +97,37 @@
       `<div class="card__foot u-text-muted u-text-sm">` +
         `Showing <strong>${data.count}</strong> quiz(zes).` +
       `</div>`;
+  }
+
+  /* --------------------------- action buttons ----------------------- */
+
+  function actionButtons(q) {
+    const edit =
+      `<a class="btn btn--ghost btn--sm" ` +
+      `href="/ui/html/instructor-quiz-edit.html?quiz_id=${q.quiz_id}">Edit</a>`;
+
+    let statusBtn = '';
+    if (q.status === 'Draft') {
+      statusBtn =
+        `<button class="btn btn--primary btn--sm" type="button" ` +
+        `data-action="publish-quiz" data-quiz-id="${q.quiz_id}">Publish</button>`;
+    } else if (q.status === 'Unpublished') {
+      statusBtn =
+        `<button class="btn btn--primary btn--sm" type="button" ` +
+        `data-action="publish-quiz" data-quiz-id="${q.quiz_id}">Re-publish</button>`;
+    } else { // Published
+      statusBtn =
+        `<button class="btn btn--ghost btn--sm" type="button" ` +
+        `data-action="unpublish-quiz" data-quiz-id="${q.quiz_id}">Unpublish</button>`;
+    }
+
+    const del =
+      `<button class="btn btn--danger btn--sm" type="button" ` +
+      `data-action="delete-quiz" data-quiz-id="${q.quiz_id}" ` +
+      `data-quiz-title="${esc(q.title)}">Delete</button>`;
+
+    return `<div class="u-flex u-gap-2" style="justify-content:flex-end;">` +
+           `${edit}${statusBtn}${del}</div>`;
   }
 
   /* ------------------------------- load ----------------------------- */
@@ -138,7 +162,30 @@
     }
   }
 
+  async function handleStatus(button, action) {
+    const quizId = button.dataset.quizId;
+    const verb   = action === 'publish' ? 'publish' : 'unpublish';
+
+    if (!window.confirm(`Are you sure you want to ${verb} this quiz?`)) return;
+
+    button.disabled = true;
+    try {
+      await Api.post(`/api/instructor/quizzes/${quizId}/${action}`);
+      showAlert('success', `Quiz ${action === 'publish' ? 'published' : 'unpublished'}.`);
+      await load();
+    } catch (err) {
+      showAlert('danger', err.message);
+      button.disabled = false;
+    }
+  }
+
   document.addEventListener('click', (event) => {
+    const publishBtn = event.target.closest('button[data-action="publish-quiz"]');
+    if (publishBtn) return handleStatus(publishBtn, 'publish');
+
+    const unpublishBtn = event.target.closest('button[data-action="unpublish-quiz"]');
+    if (unpublishBtn) return handleStatus(unpublishBtn, 'unpublish');
+    
     const btn = event.target.closest('button[data-action="delete-quiz"]');
     if (btn) handleDelete(btn);
   });
