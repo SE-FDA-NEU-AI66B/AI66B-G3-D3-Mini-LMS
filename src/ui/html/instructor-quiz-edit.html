@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini-LMS · Quiz Editor</title>
+  <link rel="stylesheet" href="/ui/css/mini-lms.css" />
+</head>
+
+<body
+  data-role="lecturer"
+  data-user-name="Pham Thi Lan"
+  data-user-email="lanpt@univ.edu"
+  data-active="quizzes"
+  data-brand-sub="Lecturer">
+
+  <div class="app-shell">
+    <div class="app-body">
+      <main class="app-main">
+        <div class="app-container">
+
+          <div class="page-head">
+            <div>
+              <h1 class="page-title" id="page-title">New quiz</h1>
+              <p class="page-sub" id="page-sub">Set the quiz details, then add questions.</p>
+            </div>
+            <a class="btn btn--ghost" href="/ui/html/instructor-quizzes.html">
+              ← Back to list
+            </a>
+          </div>
+
+          <div id="alert-area"></div>
+
+          <!-- ============================ Quiz metadata ============================ -->
+          <section class="card" id="meta-card">
+            <div class="card__head">
+              <h2 class="card__title">Quiz details</h2>
+              <span class="badge badge--draft" id="status-badge" hidden></span>
+            </div>
+
+            <div class="card__body">
+              <form id="meta-form" class="grid grid--12" novalidate>
+
+                <div class="field col-12" id="course-field">
+                  <label for="course_id">Course <span class="req">*</span></label>
+                  <select class="select" id="course_id" name="course_id" required></select>
+                  <div class="field__help">Only courses assigned to you appear here.</div>
+                </div>
+
+                <div class="field col-12">
+                  <label for="title">Title <span class="req">*</span></label>
+                  <input class="input" id="title" name="title" type="text"
+                         maxlength="255" required />
+                </div>
+
+                <div class="field col-4">
+                  <label for="time_limit_min">
+                    Time limit (minutes) <span class="req">*</span>
+                  </label>
+                  <input class="input" id="time_limit_min" name="time_limit_min"
+                         type="number" min="5" max="120" step="1" value="30" required />
+                  <div class="field__help">Between 5 and 120.</div>
+                </div>
+
+                <div class="field col-8">
+                  <label for="due_at">Due date <span class="req">*</span></label>
+                  <input class="input" id="due_at" name="due_at"
+                         type="datetime-local" required />
+                </div>
+
+              </form>
+            </div>
+
+            <div class="card__foot u-flex u-justify-between u-items-center">
+              <span class="u-text-muted u-text-sm" id="meta-hint"></span>
+              <button class="btn btn--primary" type="button" id="save-meta-btn">
+                Save quiz details
+              </button>
+            </div>
+          </section>
+
+          <!-- ============================ Questions ============================ -->
+          <section class="card" id="questions-card" hidden>
+            <div class="card__head">
+              <div>
+                <h2 class="card__title">Questions</h2>
+                <p class="card__hint" id="questions-hint">
+                  Add multiple-choice or short-answer questions.
+                </p>
+              </div>
+              <button class="btn btn--primary btn--sm" type="button" id="add-question-btn">
+                + Add question
+              </button>
+            </div>
+            <div id="questions-area">
+              <div class="state">No questions yet.</div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ============================== Modal ============================== -->
+  <div id="modal-backdrop" class="sidebar-backdrop"></div>
+
+  <div id="question-modal"
+       style="position:fixed; inset:0; z-index:60; display:none;
+              align-items:center; justify-content:center; padding:20px;
+              overflow-y:auto;">
+    <div class="card" style="width:100%; max-width:760px; margin:0;">
+      <div class="card__head">
+        <h2 class="card__title" id="modal-title">Add question</h2>
+        <button class="btn btn--ghost btn--sm" type="button" id="modal-close">Close</button>
+      </div>
+
+      <div class="card__body">
+        <form id="question-form" novalidate>
+
+          <div class="grid grid--12">
+            <div class="field col-4">
+              <label for="q_type">Type <span class="req">*</span></label>
+              <select class="select" id="q_type" name="question_type">
+                <option value="MCQ">Multiple choice</option>
+                <option value="SHORT">Short answer</option>
+              </select>
+            </div>
+            <div class="field col-8">
+              <label for="q_prompt">Prompt <span class="req">*</span></label>
+              <input class="input" id="q_prompt" name="prompt" type="text" required />
+            </div>
+          </div>
+
+          <div id="mcq-section" class="u-mt-4">
+            <div class="field__help">
+              Exactly <strong>4</strong> options; mark exactly <strong>1</strong> as correct.
+            </div>
+            <div id="mcq-options" class="u-mt-2"></div>
+          </div>
+
+          <div id="short-section" class="u-mt-4" hidden>
+            <div class="field">
+              <label for="q_answers">Accepted answers <span class="req">*</span></label>
+              <textarea class="textarea" id="q_answers" rows="4"
+                        placeholder="One accepted answer per line."></textarea>
+              <div class="field__help">
+                Matching is case-insensitive and trims whitespace.
+              </div>
+            </div>
+          </div>
+
+          <div class="u-mt-4 u-flex u-justify-between u-items-center">
+            <div class="field__error" id="question-error" hidden></div>
+            <div class="u-flex u-gap-2">
+              <button type="button" class="btn btn--ghost" id="modal-cancel">Cancel</button>
+              <button type="submit" class="btn btn--primary" id="question-save-btn">
+                Save question
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/ui/js/layout.js"></script>
+  <script src="/ui/js/api.js"></script>
+  <script src="/ui/js/instructor-quiz-edit.js"></script>
+  <script>
+    document.body.dataset.userEmail = window.MiniLMS.Api.getEmail();
+    Layout.init();
+  </script>
+</body>
+</html>
