@@ -1,25 +1,37 @@
 """
 deps.py — shared FastAPI dependencies.
 
-Today, the caller's identity is taken from the `email` query parameter,
-matching the walking-skeleton route (`GET /api/quizzes?email=...`). This
-is temporary: BR7 delegates authentication to the university SSO. When
-sessions land, only `current_email` changes — every router that depends
-on it keeps working unchanged.
+`current_email` prefers the signed session cookie (set by the SSO
+callback) and falls back to the `email` query parameter for backwards
+compatibility with the pre-auth walking-skeleton demo URLs.
 """
 
 from __future__ import annotations
 
-from fastapi import HTTPException, Query
+from fastapi import HTTPException, Query, Request
 
 
 def current_email(
-    email: str = Query(
-        ...,
-        description="Caller email. Temporary stand-in for the SSO session.",
+    request: Request,
+    email: str | None = Query(
+        None,
+        description=(
+            "Fallback email for pre-auth demo URLs. Ignored when a "
+            "session cookie is present."
+        ),
         examples=["lanpt@univ.edu"],
     ),
 ) -> str:
-    if not email or "@" not in email:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    return email
+    # 1) Session cookie (SSO) wins.
+    token = request.cookies.get("minilms_session")
+    if token:
+        from src.services.auth_service import read_session_token
+        user = read_session_token(token)
+        if user and user.get("email"):
+            return user["email"]
+
+    # 2) Fallback to ?email= for demo / debug URLs.
+    if email and "@" in email:
+        return email
+
+    raise HTTPException(status_code=401, detail="Not authenticated")

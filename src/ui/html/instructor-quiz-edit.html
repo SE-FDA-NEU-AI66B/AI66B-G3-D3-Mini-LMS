@@ -12,7 +12,8 @@
   data-user-name="Pham Thi Lan"
   data-user-email="lanpt@univ.edu"
   data-active="quizzes"
-  data-brand-sub="Lecturer">
+  data-brand-sub="Lecturer"
+  data-auth="required">
 
   <div class="app-shell">
     <div class="app-body">
@@ -31,7 +32,6 @@
 
           <div id="alert-area"></div>
 
-          <!-- ============================ Quiz metadata ============================ -->
           <section class="card" id="meta-card">
             <div class="card__head">
               <h2 class="card__title">Quiz details</h2>
@@ -92,7 +92,6 @@
             </div>
           </section>
 
-          <!-- ============================ Questions ============================ -->
           <section class="card" id="questions-card" hidden>
             <div class="card__head">
               <div>
@@ -115,7 +114,6 @@
     </div>
   </div>
 
-  <!-- ============================== Modal ============================== -->
   <div id="modal-backdrop" class="sidebar-backdrop"></div>
 
   <div id="question-modal"
@@ -180,10 +178,12 @@
 
   <script src="/ui/js/layout.js"></script>
   <script src="/ui/js/api.js"></script>
+  <script src="/ui/js/session.js"></script>
   <script src="/ui/js/instructor-quiz-edit.js"></script>
   <script>
     document.body.dataset.userEmail = window.MiniLMS.Api.getEmail();
     Layout.init();
+    Session.init();
   </script>
 </body>
 </html>

@@ -3,20 +3,21 @@ TRUNCATE TABLE
 RESTART IDENTITY CASCADE;
 
 -- ============================== USERS ==============================
-INSERT INTO "user" (user_id, email, full_name, role) VALUES
-  ( 1, 'admin@univ.edu',   'Nguyen Thi Mai',   'Admin'),
-  ( 2, 'lanpt@univ.edu',   'Pham Thi Lan',     'Lecturer'),
-  ( 3, 'tuanvm@univ.edu',  'Vu Minh Tuan',     'Lecturer'),
-  ( 4, 'minhhd@univ.edu',  'Ha Duc Minh',      'Student'),
-  ( 5, 'anhnv@univ.edu',   'Nguyen Van Anh',   'Student'),
-  ( 6, 'binhlt@univ.edu',  'Le Thanh Binh',    'Student'),
-  ( 7, 'chaupp@univ.edu',  'Pham Phuong Chau', 'Student'),
-  ( 8, 'dungvt@univ.edu',  'Vo Thanh Dung',    'Student'),
-  ( 9, 'giangnt@univ.edu', 'Nguyen Thu Giang', 'Student'),
-  (10, 'hoahtt@univ.edu',  'Huynh Thi Hoa',    'Student'),
-  (11, 'khanhnd@univ.edu', 'Nguyen Duy Khanh', 'Student'),
-  (12, 'linhtt@univ.edu',  'Tran Thi Linh',    'Student'),
-  (13, 'namlm@univ.edu',   'Le Minh Nam',      'Student');
+-- Demo password for EVERY seed user: "password123"
+INSERT INTO "user" (user_id, email, full_name, password, role) VALUES
+  ( 1, 'admin@univ.edu',   'Nguyen Thi Mai',   'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Admin'),
+  ( 2, 'lanpt@univ.edu',   'Pham Thi Lan',     'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Lecturer'),
+  ( 3, 'tuanvm@univ.edu',  'Vu Minh Tuan',     'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Lecturer'),
+  ( 4, 'minhhd@univ.edu',  'Ha Duc Minh',      'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Student'),
+  ( 5, 'anhnv@univ.edu',   'Nguyen Van Anh',   'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Student'),
+  ( 6, 'binhlt@univ.edu',  'Le Thanh Binh',    'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Student'),
+  ( 7, 'chaupp@univ.edu',  'Pham Phuong Chau', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Student'),
+  ( 8, 'dungvt@univ.edu',  'Vo Thanh Dung',    'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Student'),
+  ( 9, 'giangnt@univ.edu', 'Nguyen Thu Giang', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Student'),
+  (10, 'hoahtt@univ.edu',  'Huynh Thi Hoa',    'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Student'),
+  (11, 'khanhnd@univ.edu', 'Nguyen Duy Khanh', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Student'),
+  (12, 'linhtt@univ.edu',  'Tran Thi Linh',    'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Student'),
+  (13, 'namlm@univ.edu',   'Le Minh Nam',      'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Student');
 SELECT setval('user_user_id_seq', 13);
 
 -- ============================= COURSES =============================

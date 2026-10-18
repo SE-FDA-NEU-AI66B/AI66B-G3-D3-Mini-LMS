@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini-LMS · Dashboard</title>
+  <link rel="stylesheet" href="/ui/css/mini-lms.css" />
+</head>
+
+<body
+  data-role="student"
+  data-user-name="Student"
+  data-user-email=""
+  data-active="dashboard"
+  data-brand-sub="Student"
+  data-auth="required">
+
+  <div class="app-shell">
+    <div class="app-body">
+      <main class="app-main">
+        <div class="app-container">
+
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Dashboard</h1>
+              <p class="page-sub">Quizzes available to you right now.</p>
+            </div>
+            <button class="btn btn--ghost" type="button" id="refresh-btn">
+              Refresh
+            </button>
+          </div>
+
+          <div id="alert-area"></div>
+
+          <section class="card">
+            <div class="card__head">
+              <div>
+                <h2 class="card__title">Available quizzes</h2>
+                <p class="card__hint">
+                  Only quizzes with a future due date are listed.
+                </p>
+              </div>
+            </div>
+            <div id="list-area">
+              <div class="state">
+                <span class="spinner" aria-hidden="true"></span>
+                <div class="state__title u-mt-2">Loading quizzes…</div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/ui/js/layout.js"></script>
+  <script src="/ui/js/api.js"></script>
+  <script src="/ui/js/session.js"></script>
+  <script src="/ui/js/student-dashboard.js"></script>
+  <script>
+    Layout.init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini-LMS · Sign in</title>
+  <link rel="stylesheet" href="/ui/css/mini-lms.css" />
+</head>
+
+<body
+  data-role="guest"
+  data-brand-sub="Sign in">
+
+  <div class="app-shell">
+    <div class="app-body">
+      <main class="app-main">
+        <div class="app-container" style="max-width:520px;">
+
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Sign in</h1>
+              <p class="page-sub">Use your university account to access Mini-LMS.</p>
+            </div>
+          </div>
+
+          <div id="alert-area"></div>
+
+          <section class="card">
+            <div class="card__head">
+              <h2 class="card__title">University SSO</h2>
+            </div>
+            <div class="card__body">
+              <p class="u-text-muted">
+                Mini-LMS uses your university identity provider.
+                You will be redirected to the SSO page to authenticate.
+              </p>
+              <a class="btn btn--primary btn--block" href="/mock-sso/authorize">
+                Sign in with University SSO
+              </a>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/ui/js/layout.js"></script>
+  <script src="/ui/js/api.js"></script>
+  <script src="/ui/js/session.js"></script>
+  <script>
+    Layout.init();
+    Session.init();
+  </script>
+</body>
+</html>

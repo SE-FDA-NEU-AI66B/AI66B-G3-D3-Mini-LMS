@@ -16,6 +16,7 @@ CREATE TABLE "user" (
     user_id    SERIAL PRIMARY KEY,
     email      VARCHAR(255) UNIQUE NOT NULL,
     full_name  VARCHAR(255) NOT NULL,
+    password   VARCHAR(64) NOT NULL,
     role       user_role NOT NULL,
     status     user_status NOT NULL DEFAULT 'Active',
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
