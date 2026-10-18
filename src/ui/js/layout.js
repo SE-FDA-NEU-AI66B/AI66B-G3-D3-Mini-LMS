@@ -1,12 +1,49 @@
 /* ==========================================================================
    Mini-LMS — shared layout renderer
-   FROZEN — do not edit without explicit team approval.
-   Vanilla ES2018+, no build step, no dependencies.
    Served from: src/ui/js/layout.js
+   Version: v4-clean
+
+   Approved changes:
+     - Top bar renders the Logout button directly for non-guest roles.
+     - Footer keeps only "Mini-LMS".
+     - One-shot legacy footer cleanup (no observer — the observer is what
+       caused a previous infinite loop; do NOT re-add it).
    ========================================================================== */
 
 (function (global) {
   'use strict';
+
+  const LAYOUT_VERSION = 'v4-clean';
+
+  /* ---------------------------------------------------------------- */
+  /* One-shot legacy cleanup.                                          */
+  /* Runs ONCE at load. Does NOT install a MutationObserver.           */
+  /* Skips the write entirely when the footer is already clean, so it  */
+  /* never triggers DOM mutations in the common case.                 */
+  /* ---------------------------------------------------------------- */
+
+  function stripLegacyFooterText() {
+    document.querySelectorAll('.footer__inner').forEach(function (el) {
+      const raw = el.textContent || '';
+      if (!/NEU|FDA/i.test(raw)) return;         // fast-out — nothing to strip
+      const cleaned = el.innerHTML
+        .replace(/\s*·\s*NEU\s*·\s*FDA/gi, '')
+        .replace(/\s*·\s*FDA\s*·\s*NEU/gi, '')
+        .replace(/\s*·\s*NEU\b/gi, '')
+        .replace(/\s*·\s*FDA\b/gi, '')
+        .replace(/\bNEU\s*·\s*/gi, '')
+        .replace(/\bFDA\s*·\s*/gi, '')
+        .replace(/\bNEU\b/gi, '')
+        .replace(/\bFDA\b/gi, '');
+      if (cleaned !== el.innerHTML) el.innerHTML = cleaned;   // write only if changed
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', stripLegacyFooterText);
+  } else {
+    stripLegacyFooterText();
+  }
 
   /* ---------------------------------------------------------------- */
   /* Role and navigation definitions                                   */
@@ -47,7 +84,7 @@
   };
 
   /* ---------------------------------------------------------------- */
-  /* Helpers                                                            */
+  /* Helpers                                                           */
   /* ---------------------------------------------------------------- */
 
   function el(tag, attrs, html) {
@@ -55,7 +92,6 @@
     if (attrs) {
       for (const k in attrs) {
         if (k === 'class') node.className = attrs[k];
-        else if (k.startsWith('data-')) node.setAttribute(k, attrs[k]);
         else node.setAttribute(k, attrs[k]);
       }
     }
@@ -77,17 +113,20 @@
   }
 
   /* ---------------------------------------------------------------- */
-  /* Renderers                                                          */
+  /* Renderers                                                         */
   /* ---------------------------------------------------------------- */
 
   function renderTopBar(cfg) {
     const role = cfg.role || ROLES.guest;
-    const sub  = cfg.brandSub ? `<span class="topbar__sub">/ ${escapeHtml(cfg.brandSub)}</span>` : '';
+    const isGuest = role === ROLES.guest;
+    const sub = cfg.brandSub
+      ? `<span class="topbar__sub">/ ${escapeHtml(cfg.brandSub)}</span>`
+      : '';
 
-    const rolePill = role === ROLES.guest ? '' :
+    const rolePill = isGuest ? '' :
       `<span class="topbar__role">${escapeHtml(ROLE_LABEL[role])}</span>`;
 
-    const userChip = role === ROLES.guest ? '' : `
+    const userChip = isGuest ? '' : `
       <div class="user-chip" data-role="${role}" title="${escapeHtml(cfg.userEmail || '')}">
         <div class="user-chip__avatar">${escapeHtml(initials(cfg.userName))}</div>
         <div class="user-chip__meta">
@@ -95,6 +134,10 @@
           <span class="user-chip__role">${escapeHtml(ROLE_LABEL[role])}</span>
         </div>
       </div>`;
+
+    const logoutBtn = isGuest ? '' :
+      `<button class="btn btn--ghost btn--sm js-logout-btn" type="button"
+               data-action="logout">Logout</button>`;
 
     return `
       <header class="topbar" role="banner">
@@ -116,6 +159,7 @@
         <div class="topbar__spacer"></div>
         ${rolePill}
         ${userChip}
+        ${logoutBtn}
       </header>
     `;
   }
@@ -152,11 +196,12 @@
     `;
   }
 
-  function renderFooter(cfg) {
+  function renderFooter() {
+    const year = new Date().getFullYear();
     return `
       <footer class="footer" role="contentinfo">
         <div class="footer__inner">
-          <div>© ${new Date().getFullYear()} Mini-LMS · NEU · FDA</div>
+          <div>© ${year} Mini-LMS</div>
           <div>
             <a href="/docs">API docs</a> ·
             <a href="/health">Health</a> ·
@@ -169,6 +214,16 @@
   /* ---------------------------------------------------------------- */
   /* Wiring                                                            */
   /* ---------------------------------------------------------------- */
+
+  function doLogout() {
+    if (global.Session && typeof global.Session.logout === 'function') {
+      global.Session.logout();
+      return;
+    }
+    fetch('/api/auth/logout', { method: 'POST' })
+      .catch(() => {})
+      .finally(() => { window.location.href = '/login'; });
+  }
 
   function wireInteractions(root) {
     root.addEventListener('click', (event) => {
@@ -187,6 +242,10 @@
         const bd = root.querySelector('.sidebar-backdrop');
         if (sb) sb.classList.remove('is-open');
         if (bd) bd.classList.remove('is-open');
+      }
+      if (name === 'logout') {
+        event.preventDefault();
+        doLogout();
       }
     });
 
@@ -228,26 +287,28 @@
     if (shell) {
       const sidebarHTML = renderSidebar(cfg);
       const existingSidebar = shell.querySelector('.sidebar');
-      if (existingSidebar) {
-        existingSidebar.outerHTML = sidebarHTML;
-      } else {
-        shell.insertAdjacentHTML('afterbegin', sidebarHTML);
-      }
+      if (existingSidebar) existingSidebar.outerHTML = sidebarHTML;
+      else shell.insertAdjacentHTML('afterbegin', sidebarHTML);
     }
 
     // --- Footer ----------------------------------------------------
     const existingFooter = mount.querySelector('.footer');
-    if (!existingFooter) {
-      mount.insertAdjacentHTML('beforeend', renderFooter(cfg));
-    }
+    if (existingFooter) existingFooter.outerHTML = renderFooter();
+    else mount.insertAdjacentHTML('beforeend', renderFooter());
 
     // --- Interactions ---------------------------------------------
     wireInteractions(mount);
 
-    return { role: cfg.role, active: cfg.active };
+    // --- Version diagnostic ---------------------------------------
+    try {
+      console.log('[Layout] initialized — version:', LAYOUT_VERSION);
+    } catch (e) { /* ignore */ }
+
+    return { role: cfg.role, active: cfg.active, version: LAYOUT_VERSION };
   }
 
   global.Layout = {
+    version: LAYOUT_VERSION,
     ROLES,
     ROLE_LABEL,
     NAV,

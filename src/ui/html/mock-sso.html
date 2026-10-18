@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>University SSO · Sign in</title>
+  <link rel="stylesheet" href="/ui/css/mini-lms.css" />
+</head>
+
+<body
+  data-role="guest"
+  data-brand-name="University SSO"
+  data-brand-sub="Mock IdP">
+
+  <div class="app-shell">
+    <div class="app-body">
+      <main class="app-main">
+        <div class="app-container" style="max-width:520px;">
+
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">University SSO</h1>
+              <p class="page-sub">Sign in to continue to Mini-LMS.</p>
+            </div>
+          </div>
+
+          <div id="alert-area"></div>
+
+          <section class="card">
+            <div class="card__head">
+              <h2 class="card__title">Sign in</h2>
+            </div>
+            <div class="card__body">
+              <form id="sso-form" novalidate>
+
+                <div class="field">
+                  <label for="email">University email <span class="req">*</span></label>
+                  <input class="input" id="email" name="email" type="email"
+                         placeholder="you@univ.edu" autocomplete="username" required />
+                </div>
+
+                <div class="field u-mt-4">
+                  <label for="password">Password <span class="req">*</span></label>
+                  <div class="u-flex u-gap-2 u-items-center">
+                    <input class="input" style="flex:1" id="password" name="password"
+                           type="password" autocomplete="current-password" required />
+                    <button class="btn btn--ghost btn--sm" type="button" id="toggle-pw"
+                            aria-label="Show password">Show</button>
+                  </div>
+                </div>
+
+                <div class="u-mt-6">
+                  <button class="btn btn--primary btn--block" type="submit" id="submit-btn">
+                    Sign in
+                  </button>
+                </div>
+              </form>
+            </div>
+            <div class="card__foot">
+              <a class="u-text-sm" href="/login">← Back to Mini-LMS</a>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/ui/js/layout.js"></script>
+  <script src="/ui/js/api.js"></script>
+  <script src="/ui/js/mock-sso.js"></script>
+  <script>
+    Layout.init();
+  </script>
+</body>
+</html>

@@ -27,6 +27,25 @@ def get_user_by_email(conn: psycopg.Connection, email: str) -> tuple | None:
         return cur.fetchone()
 
 
+def get_user_full_by_email(
+    conn: psycopg.Connection, email: str
+) -> tuple | None:
+    """
+    Return (user_id, email, full_name, password, role, status) or None.
+
+    Used only by the auth service — the plain `get_user_by_email` above
+    is kept password-free so callers that never need the hash cannot
+    accidentally log it.
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            'SELECT user_id, email, full_name, password, role, status '
+            'FROM "user" WHERE email = %s',
+            (email,),
+        )
+        return cur.fetchone()
+
+
 def get_course(conn: psycopg.Connection, course_id: int) -> tuple | None:
     """Return (course_id, code, name, lecturer_id) or None."""
     with conn.cursor() as cur:
@@ -79,8 +98,8 @@ def list_quizzes_for_lecturer(
 ) -> list[tuple]:
     """
     Return (quiz_id, course_id, course_code, title, time_limit_min,
-    due_at, status, created_at, question_count) for every quiz whose
-    owning course is assigned to this lecturer.
+    due_at, status, created_at, question_count, publish_at) for every quiz
+    whose owning course is assigned to this lecturer.
     """
     with conn.cursor() as cur:
         cur.execute(

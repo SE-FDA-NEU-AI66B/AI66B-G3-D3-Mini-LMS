@@ -25,7 +25,12 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from src.config import settings
-from src.routes import health_routes, instructor_quiz_routes, quiz_routes
+from src.routes import (
+    auth_routes,
+    health_routes,
+    instructor_quiz_routes,
+    quiz_routes,
+)
 from src.services.instructor_quiz_service import InstructorServiceError
 
 app = FastAPI(
@@ -38,9 +43,21 @@ app = FastAPI(
 )
 
 
+# ---- No-cache for UI assets & HTML pages ----------------------------
+# Static CSS/JS/HTML is edited often during development; without this,
+# the browser may serve a stale copy and edits appear to "not apply".
+@app.middleware("http")
+async def _disable_cache_for_ui(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/ui/") or path in ("/login", "/mock-sso/authorize"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 # ---- Central error translation for the instructor service -----------
-# Every `InstructorServiceError` subclass carries its own status_code and
-# a human-readable message; the route layer never has to catch anything.
 @app.exception_handler(InstructorServiceError)
 async def _instructor_error_handler(
     _request: Request, exc: InstructorServiceError
@@ -53,6 +70,7 @@ app.mount("/ui/css", StaticFiles(directory="src/ui/css"), name="ui-css")
 app.mount("/ui/js", StaticFiles(directory="src/ui/js"), name="ui-js")
 app.mount("/ui/html", StaticFiles(directory="src/ui/html", html=True), name="ui-html")
 
+app.include_router(auth_routes.router)
 app.include_router(health_routes.router)
 app.include_router(quiz_routes.router)
 app.include_router(instructor_quiz_routes.router)
@@ -65,24 +83,23 @@ def root() -> dict:
         "service": "Mini-LMS",
         "docs": "/docs",
         "health": "/health",
+        "login": "/login",
         "walking_skeleton": "/api/quizzes",
     }
 
 
 if __name__ == "__main__":
-    # uvicorn prints "0.0.0.0:8000" because that is the bind address.
-    # 0.0.0.0 is not a browsable host, so print the clickable URLs first.
     print()
     print("Mini-LMS is starting. Open one of these in your browser:")
-    print("  http://localhost:8000/ui/html/demo.html")
+    print("  http://localhost:8000/login")
     print("  http://localhost:8000/api/quizzes?email=minhhd@univ.edu")
     print("  Instructor CRUD: http://localhost:8000/api/instructor/quizzes?email=lanpt@univ.edu")
-    print("  API docs: http://localhost:8000/docs")
+    print("  http://localhost:8000/docs")
     print()
 
     uvicorn.run(
         "src.app:app",
-        host="0.0.0.0",          # bind on every interface (needed for LAN / marker)
+        host="0.0.0.0",
         port=8000,
         reload=True,
         log_level="info",
