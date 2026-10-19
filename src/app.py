@@ -27,12 +27,14 @@ from fastapi.staticfiles import StaticFiles
 from src.config import settings
 from src.routes import (
     admin_routes,
+    attempt_routes,                 # NEW
     auth_routes,
     health_routes,
     instructor_quiz_routes,
     quiz_routes,
 )
 from src.services.admin_service import AdminServiceError
+from src.services.attempt_service import AttemptServiceError   # NEW
 from src.services.instructor_quiz_service import InstructorServiceError
 
 app = FastAPI(
@@ -72,6 +74,16 @@ async def _admin_error_handler(
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
 
+@app.exception_handler(AttemptServiceError)
+async def _attempt_error_handler(
+    _request: Request, exc: AttemptServiceError
+) -> JSONResponse:
+    content = {"detail": exc.message}
+    if exc.extra:
+        content.update(exc.extra)
+    return JSONResponse(status_code=exc.status_code, content=content)
+
+
 # ---- Static UI assets ------------------------------------------------
 app.mount("/ui/css", StaticFiles(directory="src/ui/css"), name="ui-css")
 app.mount("/ui/js", StaticFiles(directory="src/ui/js"), name="ui-js")
@@ -82,11 +94,11 @@ app.include_router(health_routes.router)
 app.include_router(quiz_routes.router)
 app.include_router(instructor_quiz_routes.router)
 app.include_router(admin_routes.router)
+app.include_router(attempt_routes.router)      # NEW
 
 
 @app.get("/", include_in_schema=False)
 def root() -> dict:
-    """A tiny landing response so hitting the root does not 404."""
     return {
         "service": "Mini-LMS",
         "docs": "/docs",

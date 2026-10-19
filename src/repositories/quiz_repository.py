@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from src.config import db as db_config
 from src.models.quiz import QuizListItem
-import psycopg
 
 WALKING_SKELETON_SQL = """
 SELECT q.quiz_id,
@@ -98,47 +97,3 @@ def find_visible_quizzes(student_email: str) -> list[QuizListItem]:
         )
         for quiz_id, title, course_code, due_at, time_limit_min in rows
     ]
-    
-def get_quiz_with_questions_for_taking(conn: psycopg.Connection, quiz_id: int) -> tuple | None:
-    """Lấy thông tin quiz và toàn bộ câu hỏi/đáp án để render."""
-    with conn.cursor() as cur:
-        cur.execute("SELECT quiz_id, title, time_limit_min, status, due_at FROM quiz WHERE quiz_id = %s", (quiz_id,))
-        quiz = cur.fetchone()
-        if not quiz: return None
-        
-        cur.execute("SELECT question_id, position, question_type, prompt, points FROM question WHERE quiz_id = %s ORDER BY position", (quiz_id,))
-        questions = cur.fetchall()
-        
-        questions_with_options = []
-        for q in questions:
-            q_id = q[0]
-            if q[2] == 'MCQ':
-                cur.execute("SELECT option_id, label, text FROM option WHERE question_id = %s ORDER BY label", (q_id,))
-                options = cur.fetchall()
-            else:
-                options = []
-            questions_with_options.append((q, options))
-            
-        return (quiz, questions_with_options)
-
-def create_attempt(conn: psycopg.Connection, quiz_id: int, student_id: int) -> int:
-    """Tạo attempt mới."""
-    with conn.cursor() as cur:
-        cur.execute("INSERT INTO attempt (quiz_id, student_id) VALUES (%s, %s) RETURNING attempt_id", (quiz_id, student_id))
-        return cur.fetchone()[0]
-
-def save_graded_answers(conn: psycopg.Connection, attempt_id: int, answers: list[dict], score: int, total: int, auto_submitted: bool) -> None:
-    """Lưu câu trả lời và cập nhật điểm."""
-    with conn.cursor() as cur:
-        for ans in answers:
-            cur.execute(
-                """
-                INSERT INTO answer (attempt_id, question_id, chosen_option_id, text_answer, is_correct)
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (attempt_id, ans['question_id'], ans.get('chosen_option_id'), ans.get('text_answer'), ans['is_correct'])
-            )
-        cur.execute(
-            "UPDATE attempt SET submitted_at = NOW(), score = %s, total = %s, auto_submitted = %s WHERE attempt_id = %s",
-            (score, total, auto_submitted, attempt_id)
-        )
