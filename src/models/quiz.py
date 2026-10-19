@@ -168,3 +168,13 @@ class InstructorCourseListResponse(BaseModel):
     lecturer_email: str
     count: int
     courses: list[CourseSummary]
+    
+class SubmitRequest(BaseModel):
+    answers: dict[str, str] = Field(..., description="Dict of question_id -> chosen_option_id (MCQ) or text_answer (SHORT)")
+    auto_submitted: bool = False
+
+class SubmitResponse(BaseModel):
+    attempt_id: int
+    score: int
+    total: int
+    percentage: str
