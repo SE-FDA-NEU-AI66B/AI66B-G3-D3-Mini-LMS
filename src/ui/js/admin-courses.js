@@ -1,6 +1,7 @@
 /* ==========================================================================
    Mini-LMS — admin courses page controller
    Lists courses; opens a roster modal with lecturer + enrolled students.
+   FULL CRUD for student enrollments + client-side BR enforcement.
    Served from: src/ui/js/admin-courses.js
    ========================================================================== */
 
@@ -20,6 +21,19 @@
   const rosterTitle = document.getElementById('roster-title');
   const rosterSub   = document.getElementById('roster-sub');
   const rosterBody  = document.getElementById('roster-body');
+  const rosterAlert = document.getElementById('roster-alert');
+
+  const addBtn      = document.getElementById('add-student-btn');
+  const addModal    = document.getElementById('add-student-modal');
+  const addClose    = document.getElementById('add-student-close');
+  const addCancel   = document.getElementById('add-student-cancel');
+  const addForm     = document.getElementById('add-student-form');
+  const addEmail    = document.getElementById('student-email');
+  const addError    = document.getElementById('add-student-error');
+  const addSaveBtn  = document.getElementById('add-student-save');
+
+  let currentCourseId = null;
+  let currentRoster   = null;  // lưu roster hiện tại để enforce BR phía client
 
   /* ------------------------------ alerts ---------------------------- */
 
@@ -30,6 +44,13 @@
   }
 
   function clearAlert() { alertArea.innerHTML = ''; }
+
+  function showRosterAlert(kind, message) {
+    rosterAlert.innerHTML =
+      `<div class="alert alert--${kind}" role="alert"><div>${esc(message)}</div></div>`;
+  }
+
+  function clearRosterAlert() { rosterAlert.innerHTML = ''; }
 
   /* ------------------------------ badges ---------------------------- */
 
@@ -138,6 +159,9 @@
   function closeModal() {
     modal.style.display = 'none';
     modalBackdrop.classList.remove('is-open');
+    clearRosterAlert();
+    currentCourseId = null;
+    currentRoster = null;
   }
 
   function renderRosterError(err) {
@@ -149,6 +173,7 @@
   }
 
   function renderRoster(data) {
+    currentRoster = data;
     rosterTitle.textContent = `${data.code} — ${data.name}`;
     rosterSub.textContent   = `Course #${data.course_id}`;
 
@@ -177,9 +202,32 @@
             <thead><tr>
               <th class="num">ID</th><th>Email</th><th>Name</th>
               <th>Role</th><th>Enrollment</th><th>Enrolled</th>
+              <th style="text-align:right;">Actions</th>
             </tr></thead>
             <tbody>
-              ${data.students.map(s => `
+              ${data.students.map(s => {
+                const isRemoved = s.status === 'Removed';
+                // BR: nếu user không còn là Student (bị promote), không được restore
+                const canRestore = isRemoved && s.role === 'Student';
+                const canRemove  = !isRemoved;
+
+                const actionBtns = canRemove
+                  ? `<button class="btn btn--danger btn--sm" type="button"
+                            data-action="remove-student"
+                            data-uid="${s.user_id}"
+                            data-email="${esc(s.email)}">
+                       Remove
+                     </button>`
+                  : canRestore
+                    ? `<button class="btn btn--primary btn--sm" type="button"
+                              data-action="restore-student"
+                              data-uid="${s.user_id}"
+                              data-email="${esc(s.email)}">
+                         Restore
+                       </button>`
+                    : `<span class="u-text-sm u-text-muted">N/A</span>`;
+
+                return `
                 <tr>
                   <td class="num">${s.user_id}</td>
                   <td>${esc(s.email)}</td>
@@ -187,7 +235,9 @@
                   <td>${roleBadge(s.role || 'Student')}</td>
                   <td>${statusBadge(s.status)}</td>
                   <td class="num">${esc(fmtDateTime(s.enrolled_at))}</td>
-                </tr>`).join('')}
+                  <td class="u-text-right">${actionBtns}</td>
+                </tr>`;
+              }).join('')}
             </tbody>
           </table>
         </div>`;
@@ -207,6 +257,8 @@
   }
 
   async function openRoster(courseId) {
+    currentCourseId = courseId;
+    clearRosterAlert();
     rosterTitle.textContent = 'Course roster';
     rosterSub.textContent   = `Course #${courseId}`;
     rosterBody.innerHTML =
@@ -215,13 +267,107 @@
         `<div class="state__title u-mt-2">Loading roster…</div>` +
       `</div>`;
     openModal();
+    await reloadRoster();
+  }
+
+  async function reloadRoster() {
+    if (!currentCourseId) return;
+    clearRosterAlert();
     try {
-      const data = await Api.get(`/api/admin/courses/${courseId}/roster`);
+      const data = await Api.get(`/api/admin/courses/${currentCourseId}/roster`);
       renderRoster(data);
     } catch (err) {
       renderRosterError(err);
     }
   }
+
+  /* -------------------- Add Student Modal Handlers ------------------ */
+
+  function openAddModal() {
+    if (document.body.dataset.role !== 'admin') return;
+    addEmail.value = '';
+    addError.hidden = true;
+    addError.textContent = '';
+    addModal.style.display = 'flex';
+    setTimeout(() => addEmail.focus(), 0);
+  }
+
+  function closeAddModal() {
+    addModal.style.display = 'none';
+  }
+
+  addBtn.addEventListener('click', openAddModal);
+  addClose.addEventListener('click', closeAddModal);
+  addCancel.addEventListener('click', closeAddModal);
+
+  // ============================================================
+  // ENFORCE BRs Ở FRONTEND (trước khi gọi API):
+  //   1. Email phải hợp lệ.
+  //   2. Không được trùng với sinh viên đã có enrollment Active.
+  //   3. Không được thêm user có role khác Student (nếu biết).
+  //   4. Không thể add chính mình nếu đang là Admin (defensive).
+  // ============================================================
+  addForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    addError.hidden = true;
+    const email = addEmail.value.trim().toLowerCase();
+
+    // BR-validate #1: format
+    if (!email || !email.includes('@')) {
+      addError.hidden = false;
+      addError.textContent = 'A valid email is required.';
+      return;
+    }
+
+    // BR-validate #2: trùng với enrollment Active hiện có
+    if (currentRoster && currentRoster.students) {
+      const dup = currentRoster.students.find(
+        s => s.email.toLowerCase() === email && s.status === 'Active'
+      );
+      if (dup) {
+        addError.hidden = false;
+        addError.textContent = `Student "${email}" is already enrolled in this course.`;
+        return;
+      }
+    }
+
+    // BR-validate #3: chặn nếu email là của Admin (không thể enroll Admin như Student)
+    //   → cần tra cứu nhanh account. Nếu backend chưa có endpoint tìm, bỏ qua check này.
+    try {
+      const lookup = await Api.get(`/api/admin/accounts?q=${encodeURIComponent(email)}`);
+      const match = lookup.users.find(u => u.email.toLowerCase() === email);
+      if (match && match.role !== 'Student') {
+        addError.hidden = false;
+        addError.textContent =
+          `"${email}" is a ${match.role}, not a Student. Only Student accounts can be enrolled.`;
+        return;
+      }
+      if (match && match.status === 'Disabled') {
+        addError.hidden = false;
+        addError.textContent = `"${email}" is disabled. Enable the account first.`;
+        return;
+      }
+    } catch (_e) {
+      // nếu endpoint lookup lỗi, không block — backend vẫn sẽ enforce
+    }
+
+    addSaveBtn.disabled = true;
+    try {
+      await Api.post(`/api/admin/courses/${currentCourseId}/enrollments`, {
+        student_email: email
+      });
+
+      closeAddModal();
+      showRosterAlert('success', `Student "${email}" enrolled in this course. Student count updated.`);
+      await reloadRoster();
+      await load();
+    } catch (err) {
+      addError.hidden = false;
+      addError.textContent = err.message;
+    } finally {
+      addSaveBtn.disabled = false;
+    }
+  });
 
   /* ----------------------------- handlers --------------------------- */
 
@@ -229,9 +375,74 @@
   modalClose.addEventListener('click', closeModal);
   modalBackdrop.addEventListener('click', closeModal);
 
-  document.addEventListener('click', (event) => {
-    const btn = event.target.closest('button[data-action="view-roster"]');
-    if (btn) openRoster(Number(btn.dataset.cid));
+  document.addEventListener('click', async (event) => {
+    const rosterBtn = event.target.closest('button[data-action="view-roster"]');
+    if (rosterBtn) {
+      openRoster(Number(rosterBtn.dataset.cid));
+      return;
+    }
+
+    // ============================================================
+    // DELETE: Remove (soft) — set status='Removed'
+    // ============================================================
+    const removeBtn = event.target.closest('button[data-action="remove-student"]');
+    if (removeBtn) {
+      const uid = removeBtn.dataset.uid;
+      const email = removeBtn.dataset.email;
+
+      if (!window.confirm(
+        `Remove "${email}" from this course?\n\n` +
+        `Their enrollment will be marked Removed. Past quiz attempts remain intact.`
+      )) return;
+
+      removeBtn.disabled = true;
+      try {
+        await Api.del(`/api/admin/courses/${currentCourseId}/enrollments/${uid}`);
+        showRosterAlert('success', `Student "${email}" removed from this course. Student count updated.`);
+        await reloadRoster();
+        await load();
+      } catch (err) {
+        showRosterAlert('danger', err.message);
+        removeBtn.disabled = false;
+      }
+      return;
+    }
+
+    // ============================================================
+    // UPDATE: Restore — chuyển status 'Removed' -> 'Active'
+    // ============================================================
+    const restoreBtn = event.target.closest('button[data-action="restore-student"]');
+    if (restoreBtn) {
+      const uid = restoreBtn.dataset.uid;
+      const email = restoreBtn.dataset.email;
+
+      // BR-validate: không restore nếu user không còn là Student
+      if (currentRoster) {
+        const u = currentRoster.students.find(s => String(s.user_id) === String(uid));
+        if (u && u.role !== 'Student') {
+          showRosterAlert('danger',
+            `Cannot restore "${email}" — this account is no longer a Student (role: ${u.role}).`);
+          return;
+        }
+      }
+
+      if (!window.confirm(`Restore "${email}" to this course?`)) return;
+
+      restoreBtn.disabled = true;
+      try {
+        // API restore: PATCH status='Active' (theo design: enrollments update)
+        await Api.patch(
+          `/api/admin/courses/${currentCourseId}/enrollments/${uid}`,
+          { status: 'Active' }
+        );
+        showRosterAlert('success', `Student "${email}" restored successfully.`);
+        await reloadRoster();
+        await load();
+      } catch (err) {
+        showRosterAlert('danger', err.message);
+        restoreBtn.disabled = false;
+      }
+    }
   });
 
   /* ------------------------------ boot ------------------------------ */
