@@ -59,13 +59,19 @@ def list_visible_quizzes(student_email: str) -> list[QuizListItem]:
 
 def submit_and_grade(student_email: str, quiz_id: int, answers_payload: dict, auto_submitted: bool) -> SubmitResponse:
     with db_config.connect() as conn:
-        # 1. Check User (BR8)
+        # 1. Check User
         user = quiz_repository.get_user_role_status(student_email)
         if not user or user[2] != 'Active' or user[1] != 'Student':
             raise HTTPException(403, "Access denied. Must be an active student.")
         student_id = user[0]
         
-        # 2. Lấy câu hỏi từ DB
+        # 2. Check xem đã nộp bài này chưa (BR1)
+        with conn.cursor() as cur:
+            cur.execute("SELECT attempt_id FROM attempt WHERE quiz_id = %s AND student_id = %s AND submitted_at IS NOT NULL", (quiz_id, student_id))
+            if cur.fetchone():
+                raise HTTPException(409, "You have already submitted this quiz.")
+        
+        # 3. Lấy câu hỏi từ DB
         data = quiz_repository.get_quiz_with_questions_for_taking(conn, quiz_id)
         if not data: 
             raise HTTPException(404, "Quiz not found")
@@ -74,7 +80,7 @@ def submit_and_grade(student_email: str, quiz_id: int, answers_payload: dict, au
         total_questions = len(data[1])
         graded_answers = []
 
-        # 3. Chấm điểm (BR4)
+        # 4. Chấm điểm (BR4)
         for q, opts in data[1]:
             q_id_str = str(q[0])
             q_type = q[2]
@@ -87,13 +93,20 @@ def submit_and_grade(student_email: str, quiz_id: int, answers_payload: dict, au
 
             if q_type == 'MCQ':
                 if user_ans:
-                    chosen_option_id = int(user_ans)
+                    user_ans_str = str(user_ans).strip()
                     with conn.cursor() as cur:
-                        cur.execute("SELECT is_correct FROM option WHERE option_id = %s AND question_id = %s", (chosen_option_id, q[0]))
+                        # Tìm option dựa vào ID hoặc Label (A, B, C, D)
+                        if user_ans_str.isdigit():
+                            cur.execute("SELECT option_id, is_correct FROM option WHERE option_id = %s AND question_id = %s", (int(user_ans_str), q[0]))
+                        else:
+                            cur.execute("SELECT option_id, is_correct FROM option WHERE label = %s AND question_id = %s", (user_ans_str.upper(), q[0]))
+                        
                         opt_row = cur.fetchone()
-                        if opt_row and opt_row[0]:
-                            is_correct = True
-                            score += points
+                        if opt_row:
+                            chosen_option_id = opt_row[0] # Lấy ID thật để lưu vào DB
+                            if opt_row[1]:
+                                is_correct = True
+                                score += points
             elif q_type == 'SHORT':
                 if user_ans:
                     text_answer = str(user_ans).strip()
@@ -103,12 +116,13 @@ def submit_and_grade(student_email: str, quiz_id: int, answers_payload: dict, au
                         if ans_row and ans_row[0]:
                             try:
                                 accepted_list = json.loads(ans_row[0])
+                                if not isinstance(accepted_list, list):
+                                    accepted_list = [str(accepted_list)]
                             except:
                                 accepted_list = [ans_row[0]]
                             
-                            # So sánh (case-insensitive, trim)
                             for accepted in accepted_list:
-                                if text_answer.lower() == accepted.strip().lower():
+                                if text_answer.lower() == str(accepted).strip().lower():
                                     is_correct = True
                                     score += points
                                     break
@@ -120,21 +134,24 @@ def submit_and_grade(student_email: str, quiz_id: int, answers_payload: dict, au
                 "is_correct": is_correct
             })
 
-        # 4. Lưu kết quả
-        attempt_id = quiz_repository.create_attempt(conn, quiz_id, student_id)
-        quiz_repository.save_graded_answers(conn, attempt_id, graded_answers, score, total_questions, auto_submitted)
+        # 5. Lưu kết quả
+        try:
+            attempt_id = quiz_repository.create_attempt(conn, quiz_id, student_id)
+            quiz_repository.save_graded_answers(conn, attempt_id, graded_answers, score, total_questions, auto_submitted)
+            conn.commit() 
+        except Exception as e:
+            conn.rollback()
+            raise HTTPException(500, f"Database error: {str(e)}")
         
         # 6. Format điểm (BR5) - Quy đổi ra thang điểm 10
         if total_questions > 0:
-            score_10 = (score / total_questions) * 10
             percentage = f"{(score / total_questions * 100):.2f}%"
         else:
-            score_10 = 0.0
             percentage = "0.00%"
         
         return SubmitResponse(
             attempt_id=attempt_id, 
-            score=score,          # Vẫn trả về số câu đúng (VD: 2) để lưu DB
-            total=total_questions,# Tổng số câu (VD: 4)
-            percentage=percentage # Phần trăm (VD: 50.00%)
+            score=score,          
+            total=total_questions,
+            percentage=percentage 
         )
