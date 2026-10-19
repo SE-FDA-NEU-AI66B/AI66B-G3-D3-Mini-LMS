@@ -218,13 +218,6 @@
                             data-email="${esc(s.email)}">
                        Remove
                      </button>`
-                  : canRestore
-                    ? `<button class="btn btn--primary btn--sm" type="button"
-                              data-action="restore-student"
-                              data-uid="${s.user_id}"
-                              data-email="${esc(s.email)}">
-                         Restore
-                       </button>`
                     : `<span class="u-text-sm u-text-muted">N/A</span>`;
 
                 return `
@@ -406,42 +399,6 @@
         removeBtn.disabled = false;
       }
       return;
-    }
-
-    // ============================================================
-    // UPDATE: Restore — chuyển status 'Removed' -> 'Active'
-    // ============================================================
-    const restoreBtn = event.target.closest('button[data-action="restore-student"]');
-    if (restoreBtn) {
-      const uid = restoreBtn.dataset.uid;
-      const email = restoreBtn.dataset.email;
-
-      // BR-validate: không restore nếu user không còn là Student
-      if (currentRoster) {
-        const u = currentRoster.students.find(s => String(s.user_id) === String(uid));
-        if (u && u.role !== 'Student') {
-          showRosterAlert('danger',
-            `Cannot restore "${email}" — this account is no longer a Student (role: ${u.role}).`);
-          return;
-        }
-      }
-
-      if (!window.confirm(`Restore "${email}" to this course?`)) return;
-
-      restoreBtn.disabled = true;
-      try {
-        // API restore: PATCH status='Active' (theo design: enrollments update)
-        await Api.patch(
-          `/api/admin/courses/${currentCourseId}/enrollments/${uid}`,
-          { status: 'Active' }
-        );
-        showRosterAlert('success', `Student "${email}" restored successfully.`);
-        await reloadRoster();
-        await load();
-      } catch (err) {
-        showRosterAlert('danger', err.message);
-        restoreBtn.disabled = false;
-      }
     }
   });
 
