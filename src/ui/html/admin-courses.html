@@ -73,8 +73,16 @@
           <h2 class="card__title" id="roster-title">Course roster</h2>
           <p class="card__hint" id="roster-sub"></p>
         </div>
-        <button class="btn btn--ghost btn--sm" type="button" id="modal-close">Close</button>
+        <div class="u-flex u-gap-2">
+          <!-- NÚT MỚI: Thêm sinh viên -->
+          <button class="btn btn--primary btn--sm" type="button" id="add-student-btn">
+            + Add student
+          </button>
+          <button class="btn btn--ghost btn--sm" type="button" id="modal-close">Close</button>
+        </div>
       </div>
+
+      <div id="roster-alert" class="u-mt-4" style="padding: 0 20px;"></div>
 
       <div class="card__body" id="roster-body"
            style="overflow-y:auto; flex:1 1 auto; min-height:0;">
@@ -86,6 +94,35 @@
     </div>
   </div>
 
+    <!-- ============================== Add Student Modal ============================== -->
+  <div id="add-student-modal"
+       style="position:fixed; inset:0; z-index:70; display:none;
+              align-items:center; justify-content:center; padding:20px;
+              overflow-y:auto;">
+    <div class="card" style="width:100%; max-width:480px; margin:0;">
+      <div class="card__head">
+        <h2 class="card__title">Add student to course</h2>
+        <button class="btn btn--ghost btn--sm" type="button" id="add-student-close">Close</button>
+      </div>
+      <div class="card__body">
+        <form id="add-student-form" novalidate>
+          <div class="field">
+            <label for="student-email">Student email <span class="req">*</span></label>
+            <input class="input" id="student-email" type="email" placeholder="minhhd@univ.edu" required />
+            <div class="field__help">Enter the email of an active student account.</div>
+          </div>
+          <div class="u-mt-4 u-flex u-justify-between u-items-center">
+            <div class="field__error" id="add-student-error" hidden></div>
+            <div class="u-flex u-gap-2">
+              <button type="button" class="btn btn--ghost" id="add-student-cancel">Cancel</button>
+              <button type="submit" class="btn btn--primary" id="add-student-save">Add to course</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
   <script src="/ui/js/layout.js"></script>
   <script src="/ui/js/api.js"></script>
   <script src="/ui/js/session.js"></script>
