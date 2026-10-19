@@ -224,3 +224,39 @@ def list_course_enrollments(
             (course_id,),
         )
         return cur.fetchall()
+    
+# ----------------------------------------------------------------------
+# Enrollments (Task #67)
+# ----------------------------------------------------------------------
+
+def get_user_by_email(conn: psycopg.Connection, email: str) -> tuple | None:
+    """Return (user_id, role, status)."""
+    with conn.cursor() as cur:
+        cur.execute(
+            'SELECT user_id, role, status FROM "user" WHERE email = %s',
+            (email,)
+        )
+        return cur.fetchone()
+
+def get_enrollment_status(conn: psycopg.Connection, course_id: int, student_id: int) -> str | None:
+    """Return 'Active' | 'Removed' | None."""
+    with conn.cursor() as cur:
+        cur.execute(
+            'SELECT status FROM enrollment WHERE course_id = %s AND student_id = %s',
+            (course_id, student_id)
+        )
+        row = cur.fetchone()
+        return row[0] if row else None
+
+def upsert_enrollment(conn: psycopg.Connection, course_id: int, student_id: int, status: str) -> None:
+    """Insert or Update enrollment status."""
+    with conn.cursor() as cur:
+        cur.execute(
+            '''
+            INSERT INTO enrollment (student_id, course_id, status)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (student_id, course_id)
+            DO UPDATE SET status = EXCLUDED.status
+            ''',
+            (student_id, course_id, status)
+        )

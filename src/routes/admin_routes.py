@@ -20,8 +20,12 @@ from src.models.admin import (
 )
 from src.routes.deps import current_email
 from src.services import admin_service
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
+
+class EnrollmentRequest(BaseModel):
+    student_email: str
 
 
 # ------------------------------- users --------------------------------
@@ -117,3 +121,32 @@ def get_roster(
     course_id: int, email: str = Depends(current_email)
 ) -> CourseRosterResponse:
     return admin_service.get_course_roster(email, course_id)
+
+
+# ---------------------------- enrollments -----------------------------
+
+@router.post(
+    "/courses/{course_id}/enrollments",
+    status_code=status.HTTP_201_CREATED,
+    summary="Enroll a student into a course (US12)",
+)
+def add_enrollment(
+    course_id: int,
+    payload: EnrollmentRequest,
+    email: str = Depends(current_email),
+):
+    admin_service.add_enrollment(email, course_id, payload.student_email)
+    return {"ok": True, "message": "Student enrolled successfully"}
+
+@router.delete(
+    "/courses/{course_id}/enrollments/{student_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Remove a student from a course (US12)",
+)
+def remove_enrollment(
+    course_id: int,
+    student_id: int,
+    email: str = Depends(current_email),
+):
+    admin_service.remove_enrollment(email, course_id, student_id)
+    return {"ok": True, "message": "Student removed successfully"}
