@@ -26,11 +26,13 @@ from fastapi.staticfiles import StaticFiles
 
 from src.config import settings
 from src.routes import (
+    admin_routes,
     auth_routes,
     health_routes,
     instructor_quiz_routes,
     quiz_routes,
 )
+from src.services.admin_service import AdminServiceError
 from src.services.instructor_quiz_service import InstructorServiceError
 
 app = FastAPI(
@@ -44,8 +46,6 @@ app = FastAPI(
 
 
 # ---- No-cache for UI assets & HTML pages ----------------------------
-# Static CSS/JS/HTML is edited often during development; without this,
-# the browser may serve a stale copy and edits appear to "not apply".
 @app.middleware("http")
 async def _disable_cache_for_ui(request: Request, call_next):
     response = await call_next(request)
@@ -57,10 +57,17 @@ async def _disable_cache_for_ui(request: Request, call_next):
     return response
 
 
-# ---- Central error translation for the instructor service -----------
+# ---- Central error translation --------------------------------------
 @app.exception_handler(InstructorServiceError)
 async def _instructor_error_handler(
     _request: Request, exc: InstructorServiceError
+) -> JSONResponse:
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
+
+
+@app.exception_handler(AdminServiceError)
+async def _admin_error_handler(
+    _request: Request, exc: AdminServiceError
 ) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
@@ -74,6 +81,7 @@ app.include_router(auth_routes.router)
 app.include_router(health_routes.router)
 app.include_router(quiz_routes.router)
 app.include_router(instructor_quiz_routes.router)
+app.include_router(admin_routes.router)
 
 
 @app.get("/", include_in_schema=False)
@@ -94,6 +102,7 @@ if __name__ == "__main__":
     print("  http://localhost:8000/login")
     print("  http://localhost:8000/api/quizzes?email=minhhd@univ.edu")
     print("  Instructor CRUD: http://localhost:8000/api/instructor/quizzes?email=lanpt@univ.edu")
+    print("  Admin CRUD: http://localhost:8000/api/admin/accounts?email=admin@univ.edu")
     print("  http://localhost:8000/docs")
     print()
 

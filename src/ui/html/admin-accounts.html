@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini-LMS · Accounts</title>
+  <link rel="stylesheet" href="/ui/css/mini-lms.css" />
+</head>
+
+<body
+  data-role="admin"
+  data-user-name="Administrator"
+  data-user-email=""
+  data-active="accounts"
+  data-brand-sub="Admin"
+  data-auth="required">
+
+  <div class="app-shell">
+    <div class="app-body">
+      <main class="app-main">
+        <div class="app-container">
+
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">User accounts</h1>
+              <p class="page-sub">Create, edit, disable, or delete accounts.</p>
+            </div>
+            <button class="btn btn--primary" type="button" id="new-account-btn">
+              + New account
+            </button>
+          </div>
+
+          <div id="alert-area"></div>
+
+          <section class="card">
+            <div class="card__head">
+              <div>
+                <h2 class="card__title">Filters</h2>
+                <p class="card__hint">Narrow the list by role, status, id, or text.</p>
+              </div>
+            </div>
+            <div class="card__body">
+              <div class="grid grid--12">
+                <div class="field col-3">
+                  <label for="filter-role">Role</label>
+                  <select class="select" id="filter-role">
+                    <option value="">All roles</option>
+                    <option value="Student">Student</option>
+                    <option value="Lecturer">Lecturer</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+                <div class="field col-3">
+                  <label for="filter-status">Status</label>
+                  <select class="select" id="filter-status">
+                    <option value="">All statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Disabled">Disabled</option>
+                  </select>
+                </div>
+                <div class="field col-3">
+                  <label for="filter-id">User ID</label>
+                  <input class="input" id="filter-id" type="number"
+                         min="1" placeholder="e.g. 4" />
+                </div>
+                <div class="field col-3">
+                  <label for="filter-q">Search</label>
+                  <input class="input" id="filter-q" type="text"
+                         placeholder="email or full name" />
+                </div>
+              </div>
+              <div class="u-flex u-gap-2 u-mt-4" style="justify-content:flex-end;">
+                <button class="btn btn--ghost" type="button" id="clear-filters">
+                  Clear
+                </button>
+                <button class="btn btn--primary" type="button" id="apply-filters">
+                  Apply filters
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card__head">
+              <div>
+                <h2 class="card__title">Accounts</h2>
+                <p class="card__hint" id="accounts-summary">Loading…</p>
+              </div>
+              <button class="btn btn--ghost btn--sm" type="button" id="refresh-btn">
+                Refresh
+              </button>
+            </div>
+            <div id="list-area">
+              <div class="state">
+                <span class="spinner" aria-hidden="true"></span>
+                <div class="state__title u-mt-2">Loading accounts…</div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="modal-backdrop" class="sidebar-backdrop"></div>
+
+  <!-- ============================== Account modal ============================== -->
+  <div id="account-modal"
+       style="position:fixed; inset:0; z-index:60; display:none;
+              align-items:center; justify-content:center; padding:20px;
+              overflow-y:auto;">
+    <div class="card" style="width:100%; max-width:640px; margin:0;">
+      <div class="card__head">
+        <h2 class="card__title" id="modal-title">New account</h2>
+        <button class="btn btn--ghost btn--sm" type="button" id="modal-close">Close</button>
+      </div>
+
+      <div class="card__body">
+        <form id="account-form" novalidate>
+
+          <div class="grid grid--12">
+            <div class="field col-12">
+              <label for="acct-email">Email <span class="req">*</span></label>
+              <input class="input" id="acct-email" type="email"
+                     placeholder="user@univ.edu" required />
+            </div>
+
+            <div class="field col-12">
+              <label for="acct-fullname">Full name <span class="req">*</span></label>
+              <input class="input" id="acct-fullname" type="text"
+                     maxlength="255" required />
+            </div>
+
+            <div class="field col-12">
+              <label for="acct-password">
+                Password <span class="req" id="acct-password-req">*</span>
+              </label>
+              <div class="u-flex u-gap-2 u-items-center">
+                <input class="input" style="flex:1" id="acct-password"
+                       type="password" autocomplete="new-password" />
+                <button class="btn btn--ghost btn--sm" type="button"
+                        id="acct-password-toggle" aria-label="Show password">Show</button>
+              </div>
+              <div class="field__help" id="acct-password-help">
+                Initial password. Hashed with SHA-256 before storage.
+              </div>
+            </div>
+
+            <div class="field col-6">
+              <label for="acct-role">Role <span class="req">*</span></label>
+              <select class="select" id="acct-role">
+                <option value="Student">Student</option>
+                <option value="Lecturer">Lecturer</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+
+            <div class="field col-6">
+              <label for="acct-status">Status <span class="req">*</span></label>
+              <select class="select" id="acct-status">
+                <option value="Active">Active</option>
+                <option value="Disabled">Disabled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="u-mt-6 u-flex u-justify-between u-items-center">
+            <div class="field__error" id="account-error" hidden></div>
+            <div class="u-flex u-gap-2">
+              <button type="button" class="btn btn--ghost" id="modal-cancel">Cancel</button>
+              <button type="submit" class="btn btn--primary" id="account-save-btn">
+                Save account
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/ui/js/layout.js"></script>
+  <script src="/ui/js/api.js"></script>
+  <script src="/ui/js/session.js"></script>
+  <script src="/ui/js/admin-accounts.js"></script>
+  <script>
+    document.body.dataset.userEmail = window.MiniLMS.Api.getEmail();
+    Layout.init();
+    Session.init();
+  </script>
+</body>
+</html>

@@ -1,19 +1,22 @@
 /* ==========================================================================
    Mini-LMS — shared layout renderer
    Served from: src/ui/js/layout.js
-   Version: v4-clean
+   Version: v5-nav
 
    Approved changes:
      - Top bar renders the Logout button directly for non-guest roles.
      - Footer keeps only "Mini-LMS".
      - One-shot legacy footer cleanup (no observer — the observer is what
        caused a previous infinite loop; do NOT re-add it).
+     - NAV hrefs point at the real static HTML pages instead of the
+       placeholder SPA paths. Admin sidebar now lists Accounts then
+       Courses, matching the post-login default landing page.
    ========================================================================== */
 
 (function (global) {
   'use strict';
 
-  const LAYOUT_VERSION = 'v4-clean';
+  const LAYOUT_VERSION = 'v5-nav';
 
   /* ---------------------------------------------------------------- */
   /* One-shot legacy cleanup.                                          */
@@ -63,23 +66,26 @@
     admin:    'Administrator',
   };
 
+  // NOTE: hrefs point to the actual static HTML files served by FastAPI
+  // under /ui/html. Only "My results" (/results) is still a placeholder —
+  // that is US07 and will be implemented in a later sprint.
   const NAV = {
     guest: [],
     student: [
-      { id: 'dashboard', label: 'Dashboard',  href: '/dashboard',
+      { id: 'dashboard', label: 'Dashboard',  href: '/ui/html/student-dashboard.html',
         icon: '<path d="M4 6h16M4 12h16M4 18h10"/>' },
       { id: 'results',   label: 'My results', href: '/results',
         icon: '<path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6"/>' },
     ],
     lecturer: [
-      { id: 'quizzes', label: 'My quizzes', href: '/instructor/quizzes',
+      { id: 'quizzes', label: 'My quizzes', href: '/ui/html/instructor-quizzes.html',
         icon: '<path d="M4 4h16v12H4zM8 20h8M12 16v4"/>' },
     ],
     admin: [
-      { id: 'courses',  label: 'Courses',  href: '/admin/courses',
-        icon: '<path d="M4 6h16M4 12h16M4 18h10"/>' },
-      { id: 'accounts', label: 'Accounts', href: '/admin/accounts',
+      { id: 'accounts', label: 'Accounts', href: '/ui/html/admin-accounts.html',
         icon: '<circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c0-3.6 3.4-6.5 7.5-6.5s7.5 2.9 7.5 6.5"/>' },
+      { id: 'courses',  label: 'Courses',  href: '/ui/html/admin-courses.html',
+        icon: '<path d="M4 6h16M4 12h16M4 18h10"/>' },
     ],
   };
 
