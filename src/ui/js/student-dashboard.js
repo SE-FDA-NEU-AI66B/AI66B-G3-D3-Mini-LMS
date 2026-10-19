@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Mini-LMS — student dashboard controller
+   Mini-LMS — student dashboard page controller (US2)
    Fetches GET /api/quizzes and renders summary + table with the
    usual four states (loading / error / empty / data).
    Served from: src/ui/js/student-dashboard.js
@@ -15,6 +15,13 @@
   const refreshBtn = document.getElementById('refresh-btn');
 
   /* ------------------------------ alerts ---------------------------- */
+
+  // NEW: This function sends the error message to the top of the screen
+  function showAlert(kind, message) {
+    alertArea.innerHTML =
+      `<div class="alert alert--${kind}" role="alert"><div>${esc(message)}</div></div>`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   function renderSummary(data) {
     if (!data.quizzes || data.quizzes.length === 0) {
@@ -110,6 +117,8 @@
       renderSummary(data);
       renderList(data);
     } catch (err) {
+      // NEW: Sends the red error banner at the top
+      showAlert('danger', 'Failed to load quizzes: ' + err.message);
       renderError(err);
     }
   }
@@ -118,11 +127,13 @@
 
   async function boot() {
     try {
-      const user = await Session.init();   // ensures sessionStorage email is set
-      if (!user) return;                   // session.js already redirected
+      const user = await Session.init();
+      if (!user) return; 
       document.body.dataset.userEmail = user.email || '';
       await load();
     } catch (err) {
+      // NEW: Sends the red error banner if session fails
+      showAlert('danger', 'Session error: ' + err.message);
       renderError(err);
     }
   }
