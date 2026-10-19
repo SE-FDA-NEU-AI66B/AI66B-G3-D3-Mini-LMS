@@ -271,3 +271,55 @@ def get_course_roster(admin_email: str, course_id: int) -> CourseRosterResponse:
         lecturer=lecturer,
         students=students,
     )
+    
+# ----------------------------------------------------------------------
+# Enrollments (Task #67)
+# ----------------------------------------------------------------------
+
+def add_enrollment(admin_email: str, course_id: int, student_email: str) -> None:
+    with db_config.connect() as conn:
+        _require_admin(conn, admin_email)
+        
+        # 1. Check Course exists
+        course = repo.get_course_admin(conn, course_id)
+        if course is None:
+            raise NotFoundError(f"Course {course_id} not found")
+
+        # 2. Check Student exists, is Student, and is Active (BR12 + BR8)
+        student_email = student_email.strip().lower()
+        user_row = repo.get_user_by_email(conn, student_email)
+        if not user_row:
+            raise ValidationError(f"Account '{student_email}' not found.")
+        
+        user_id, role, status = user_row
+        if role != "Student":
+            raise ValidationError(f"'{student_email}' is a {role}, not a Student.")
+        if status != "Active":
+            raise ValidationError(f"'{student_email}' is disabled. Enable the account first.")
+
+        # 3. Check existing enrollment (Enforce no duplicate Active)
+        existing_status = repo.get_enrollment_status(conn, course_id, user_id)
+        if existing_status == "Active":
+            raise ConflictError(f"Student '{student_email}' is already enrolled in this course.")
+        
+        # 4. Insert or Restore (If previously Removed)
+        repo.upsert_enrollment(conn, course_id, user_id, "Active")
+
+def remove_enrollment(admin_email: str, course_id: int, student_id: int) -> None:
+    with db_config.connect() as conn:
+        _require_admin(conn, admin_email)
+        
+        # 1. Check Course exists
+        course = repo.get_course_admin(conn, course_id)
+        if course is None:
+            raise NotFoundError(f"Course {course_id} not found")
+            
+        # 2. Check enrollment exists
+        existing_status = repo.get_enrollment_status(conn, course_id, student_id)
+        if existing_status is None:
+            raise NotFoundError("Enrollment not found.")
+        if existing_status == "Removed":
+            raise ConflictError("Student is already removed from this course.")
+            
+        # 3. Soft-delete (BR6, BR10: keep history)
+        repo.upsert_enrollment(conn, course_id, student_id, "Removed")
