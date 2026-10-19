@@ -1,14 +1,23 @@
 /* ==========================================================================
    Mini-LMS — quiz result page controller
-   Reads ?attempt_id=… and renders score + percentage.
-   Per-question review is deferred to US10.
+
+   Renders the teammate's card:
+     - score-display   → score in scale 10, e.g. "5.00 / 10"
+                         (teammate's formula: (score/total*10).toFixed(2))
+                         turns red when score/total < 0.5
+     - percent-display → "X / Y câu đúng"
+     - auto-msg        → "Time was up…" if auto-submitted
+
+   Data source: GET /api/attempts/{attempt_id}/result
+   (Replaces the old sessionStorage.last_result read — the backend is
+   now authoritative, so F5 / new tab / cross-device works.)
    Served from: src/ui/js/quiz-result.js
    ========================================================================== */
 
 (function () {
   'use strict';
 
-  const { Api, esc, fmtDateTime } = window.MiniLMS;
+  const { Api, esc } = window.MiniLMS;
 
   const params = new URLSearchParams(window.location.search);
   const ATTEMPT_ID = params.get('attempt_id')
@@ -16,88 +25,66 @@
     : null;
 
   const $ = (id) => document.getElementById(id);
-  const pageTitleEl = $('page-title');
-  const pageSubEl   = $('page-sub');
-  const alertArea   = $('alert-area');
-  const resultCard  = $('result-card');
-  const resultBody  = $('result-body');
-  const stateCard   = $('state-card');
-  const stateArea   = $('state-area');
+  const scoreDisplay   = $('score-display');
+  const percentDisplay = $('percent-display');
+  const autoMsg        = $('auto-msg');
 
-  function renderError(msg) {
-    resultCard.hidden = true;
-    stateCard.hidden  = false;
-    stateArea.innerHTML =
-      `<div class="state">` +
-        `<div class="state__title">Could not load result</div>` +
-        `<div>${esc(msg)}</div>` +
-        `<div class="state__actions">` +
-          `<a class="btn btn--ghost" href="/ui/html/student-dashboard.html">` +
-            `Back to dashboard` +
-          `</a>` +
-        `</div>` +
-      `</div>`;
+  /* ------------------------ fallback (teammate's) ---------------- */
+
+  function renderFallback(message) {
+    scoreDisplay.textContent = 'No Result Found';
+    scoreDisplay.style.color = 'var(--color-text-muted)';
+    percentDisplay.style.display = 'none';
+    autoMsg.textContent = message
+      || 'Please take a quiz to see your score.';
   }
 
-  function fmtPct(p) { return Number(p).toFixed(2) + '%'; }
+  /* ------------------------------ render ------------------------ */
+
+  function renderResult(res) {
+    // Big display: score in scale 10 (teammate's formula, unchanged)
+    const score10 = ((res.score / res.total) * 10).toFixed(2);
+    scoreDisplay.textContent = `${score10} / 10`;
+
+    // Teammate's colour rule: red below 50%, primary otherwise
+    if (res.total > 0 && (res.score / res.total) < 0.5) {
+      scoreDisplay.style.color = '#b91c1c';   // --color-danger-fg
+    } else {
+      scoreDisplay.style.color = 'var(--color-primary)';
+    }
+
+    // Badge: correct / total
+    percentDisplay.style.display = '';
+    percentDisplay.textContent = `${res.score} / ${res.total} câu đúng`;
+
+    // Auto-submit notice (BR3)
+    if (res.auto_submitted) {
+      autoMsg.textContent =
+        'Time was up. The quiz was auto-submitted (BR3).';
+    } else {
+      autoMsg.textContent = '';
+    }
+  }
+
+  /* ------------------------------ boot --------------------------- */
 
   async function boot() {
+    // Student role gate is handled by session.js before this runs.
     await Session.init();
 
-    if (!ATTEMPT_ID) return renderError('Missing attempt_id parameter.');
+    if (!ATTEMPT_ID) {
+      return renderFallback('Please take a quiz to see your score.');
+    }
 
     let res;
     try {
       res = await Api.get(`/api/attempts/${ATTEMPT_ID}/result`);
     } catch (err) {
-      return renderError(err.message || 'Could not load the result.');
+      // 401 / 403 / 404 / 409 / network — surface the backend message
+      return renderFallback(err.message || 'Could not load result.');
     }
 
-    pageTitleEl.textContent = res.quiz_title;
-    pageSubEl.textContent   =
-      `${res.course_code} · Attempt #${res.attempt_id}`;
-
-    if (res.auto_submitted) {
-      alertArea.innerHTML =
-        `<div class="alert alert--warning" role="status">` +
-          `<svg class="alert__icon" width="16" height="16" viewBox="0 0 24 24"` +
-          `     fill="none" stroke="currentColor" stroke-width="2">` +
-            `<circle cx="12" cy="12" r="9"/>` +
-            `<path d="M12 8v5M12 16.5v.01"/>` +
-          `</svg>` +
-          `<div><strong>Time is up.</strong> Your attempt was auto-submitted.</div>` +
-        `</div>`;
-    }
-
-    const pct = fmtPct(res.percentage);
-    const ok  = res.percentage >= 50;
-
-    resultBody.innerHTML =
-      `<div style="text-align: center;">` +
-        `<div class="u-text-muted u-text-sm">Your score</div>` +
-        `<div style="font-size: 56px; font-weight: 700; margin: 8px 0;">` +
-          `${res.score}` +
-          `<span class="u-text-muted" style="font-size: 28px; font-weight: 500;">` +
-            ` / ${res.total}` +
-          `</span>` +
-        `</div>` +
-        `<div class="badge ${ok ? 'badge--active' : 'badge--disabled'}"` +
-        `     style="font-size: 14px; padding: 6px 14px;">` +
-          `${pct}` +
-        `</div>` +
-        `<div class="u-text-muted u-text-sm u-mt-4">` +
-          `Submitted ${esc(fmtDateTime(res.submitted_at))}` +
-        `</div>` +
-      `</div>` +
-      `<div class="card__foot u-text-muted u-text-sm u-mt-4"` +
-      `     style="text-align: center;">` +
-        (res.answers_released
-          ? `Your lecturer has released the answers.`
-          : `Your lecturer has not released the answers yet.`) +
-      `</div>`;
-
-    stateCard.hidden  = true;
-    resultCard.hidden = false;
+    renderResult(res);
   }
 
   boot();

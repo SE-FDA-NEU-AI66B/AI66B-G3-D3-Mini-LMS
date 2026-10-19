@@ -12,13 +12,11 @@ It contains no SQL and no business rules.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query
 
 from src.models.quiz import QuizListResponse
 from src.services import quiz_service
 from src.services.quiz_service import StudentNotFoundError
-from src.models.quiz import SubmitRequest, SubmitResponse
-from src.routes.deps import current_email
 
 
 router = APIRouter(prefix="/api", tags=["quizzes"])
@@ -52,7 +50,3 @@ def list_quizzes(
         count=len(quizzes),
         quizzes=quizzes,
     )
-
-@router.post("/quizzes/{quiz_id}/submit", response_model=SubmitResponse)
-def submit_quiz(quiz_id: int, payload: SubmitRequest, email: str = Depends(current_email)):
-    return quiz_service.submit_and_grade(email, quiz_id, payload.answers, payload.auto_submitted)

@@ -2,29 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mini-LMS · Quiz Result</title>
   <link rel="stylesheet" href="/ui/css/mini-lms.css" />
 </head>
-<body data-role="student" data-auth="required" data-active="dashboard">
+<body
+  data-role="student"
+  data-user-name="Student"
+  data-user-email=""
+  data-active="dashboard"
+  data-brand-sub="Student"
+  data-auth="required">
+
   <div class="app-shell">
     <div class="app-body">
       <main class="app-main">
         <div class="app-container" style="max-width:600px;">
-          
+
           <div class="card u-mt-6" style="text-align:center; padding: 40px 20px;">
-            <h1 class="page-title u-text-muted" style="font-size: 18px;">Quiz Completed!</h1>
-            
-            <div id="score-display" style="font-size: 64px; font-weight: bold; color: var(--color-primary); margin: 20px 0;">
+            <h1 class="page-title u-text-muted" style="font-size: 18px;">
+              Quiz Completed!
+            </h1>
+
+            <div id="score-display"
+                 style="font-size: 64px; font-weight: bold;
+                        color: var(--color-primary); margin: 20px 0;">
               -- / --
             </div>
-            <div id="percent-display" class="badge badge--active" style="font-size: 18px; padding: 8px 16px;">
+
+            <div id="percent-display"
+                 class="badge badge--active"
+                 style="font-size: 18px; padding: 8px 16px;">
               -- %
             </div>
-            
+
             <p class="u-text-muted u-mt-6" id="auto-msg"></p>
-            
+
             <div class="u-mt-6">
-              <a href="/ui/html/student-dashboard.html" class="btn btn--primary">Back to Dashboard</a>
+              <a href="/ui/html/student-dashboard.html"
+                 class="btn btn--primary">Back to Dashboard</a>
             </div>
           </div>
 
@@ -32,39 +48,15 @@
       </main>
     </div>
   </div>
+
   <script src="/ui/js/layout.js"></script>
   <script src="/ui/js/api.js"></script>
   <script src="/ui/js/session.js"></script>
+  <script src="/ui/js/quiz-result.js"></script>
   <script>
-    // Render kết quả từ sessionStorage
-    const resStr = sessionStorage.getItem('last_result');
-    if (resStr) {
-      const res = JSON.parse(resStr);
-      // Tính điểm hệ 10
-      const score10 = ((res.score / res.total) * 10).toFixed(2); 
-      document.getElementById('score-display').textContent = `${score10} / 10`;
-      
-      // Đổi màu nếu điểm thấp
-      const scoreDisplay = document.getElementById('score-display');
-      if (res.score / res.total < 0.5) {
-        scoreDisplay.style.color = '#b91c1c'; // Đỏ nếu dưới 50%
-      }
-      
-      document.getElementById('percent-display').textContent = `${res.score} / ${res.total} câu đúng`;
-      
-      if (res.auto_submitted) {
-        document.getElementById('auto-msg').textContent = "Time was up. The quiz was auto-submitted (BR3).";
-      }
-      
-      // Xóa sessionStorage sau khi hiển thị để tránh F5 bị lặp lại
-      sessionStorage.removeItem('last_result');
-    } else {
-      // Nếu vào thẳng không có data
-      document.getElementById('score-display').textContent = "No Result Found";
-      document.getElementById('percent-display').style.display = 'none';
-      document.getElementById('auto-msg').textContent = "Please take a quiz to see your score.";
-    }
-    Layout.init(); Session.init();
+    document.body.dataset.userEmail = window.MiniLMS.Api.getEmail();
+    Layout.init();
+    Session.init();
   </script>
 </body>
 </html>

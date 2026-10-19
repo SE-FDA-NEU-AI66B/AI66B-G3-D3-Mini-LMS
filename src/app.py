@@ -74,11 +74,14 @@ async def _admin_error_handler(
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
 
-@app.exception_handler(AttemptServiceError)     # NEW
+@app.exception_handler(AttemptServiceError)
 async def _attempt_error_handler(
     _request: Request, exc: AttemptServiceError
 ) -> JSONResponse:
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
+    content = {"detail": exc.message}
+    if exc.extra:
+        content.update(exc.extra)
+    return JSONResponse(status_code=exc.status_code, content=content)
 
 
 # ---- Static UI assets ------------------------------------------------

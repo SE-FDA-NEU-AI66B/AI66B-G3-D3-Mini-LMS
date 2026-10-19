@@ -314,3 +314,60 @@ def update_answer_correctness(
             "UPDATE answer SET is_correct = %s WHERE answer_id = %s",
             (is_correct, answer_id),
         )
+
+# ----------------------------------------------------------------------
+# "One quiz at a time" enforcement
+# ----------------------------------------------------------------------
+
+def list_expired_attempts(
+    conn: psycopg.Connection, student_id: int
+) -> list[tuple]:
+    """
+    Return (attempt_id, quiz_id) of every unsubmitted attempt whose time
+    window has already elapsed.
+
+    Called by attempt_service.start_attempt to auto-submit abandoned
+    attempts BEFORE checking for other active quizzes. Without this,
+    closing the browser mid-quiz would leave the student locked out of
+    new attempts until the timer expired client-side (which never happens
+    when the browser is gone).
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT a.attempt_id, a.quiz_id
+              FROM attempt a
+              JOIN quiz q ON q.quiz_id = a.quiz_id
+             WHERE a.student_id = %s
+               AND a.submitted_at IS NULL
+               AND a.started_at + (q.time_limit_min * INTERVAL '1 minute') <= NOW()
+            """,
+            (student_id,),
+        )
+        return cur.fetchall()
+
+
+def get_any_active_attempt(
+    conn: psycopg.Connection, student_id: int
+) -> tuple | None:
+    """
+    Return (attempt_id, quiz_id, quiz_title) of the student's current
+    active attempt on ANY quiz, or None.
+
+    Used to enforce "one quiz at a time" — a stricter reading of BR1
+    than the schema index (which only guarantees one attempt per
+    student-per-quiz).
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT a.attempt_id, a.quiz_id, q.title
+              FROM attempt a
+              JOIN quiz q ON q.quiz_id = a.quiz_id
+             WHERE a.student_id = %s AND a.submitted_at IS NULL
+             ORDER BY a.started_at DESC
+             LIMIT 1
+            """,
+            (student_id,),
+        )
+        return cur.fetchone()

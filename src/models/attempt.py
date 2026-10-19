@@ -3,6 +3,9 @@ attempt.py — request/response shapes for the student attempt flow (US03).
 
 Deliberately separate from quiz.py so the "during attempt" contract
 cannot accidentally leak `is_correct` or `accepted_answers`.
+
+Every mutating operation (start / save / tab-switch / submit / heartbeat)
+requires a `device_id` so the server can enforce "one device at a time".
 """
 
 from __future__ import annotations
@@ -20,12 +23,7 @@ class AttemptQuestionOption(BaseModel):
 
 
 class AttemptQuestion(BaseModel):
-    """
-    A question as exposed DURING an attempt.
-
-    Omits `is_correct` (MCQ options) and `accepted_answers` (SHORT) —
-    either would let the student see the answer while still taking the quiz.
-    """
+    """A question as exposed DURING an attempt (no answers, no is_correct)."""
     question_id: int
     position: int
     question_type: Literal["MCQ", "SHORT"]
@@ -55,9 +53,21 @@ class AttemptState(BaseModel):
     saved_answers: list[SavedAnswer]
 
 
+# ---- mutating requests — all require device_id -----------------------
+
+class StartAttemptRequest(BaseModel):
+    device_id: str = Field(..., min_length=1, max_length=128)
+    takeover: bool = False
+
+
 class SaveAnswerRequest(BaseModel):
+    device_id: str = Field(..., min_length=1, max_length=128)
     chosen_option_id: int | None = None
     text_answer: str | None = None
+
+
+class TabSwitchRequest(BaseModel):
+    device_id: str = Field(..., min_length=1, max_length=128)
 
 
 class TabSwitchResponse(BaseModel):
@@ -66,6 +76,7 @@ class TabSwitchResponse(BaseModel):
 
 
 class SubmitRequest(BaseModel):
+    device_id: str = Field(..., min_length=1, max_length=128)
     auto_submitted: bool = False
 
 
@@ -75,6 +86,15 @@ class SubmitResponse(BaseModel):
     total: int
     percentage: float
     auto_submitted: bool
+
+
+class HeartbeatRequest(BaseModel):
+    device_id: str = Field(..., min_length=1, max_length=128)
+
+
+class HeartbeatResponse(BaseModel):
+    ok: bool
+    remaining_seconds: int
 
 
 class AttemptResult(BaseModel):
