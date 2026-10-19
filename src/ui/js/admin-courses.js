@@ -195,7 +195,9 @@
       lecturerHTML = `<p class="u-text-muted">No lecturer assigned.</p>`;
     }
 
-    const studentRows = data.students.length === 0
+    const activeStudents = data.students.filter(s => s.status === 'Active');
+
+    const studentRows = activeStudents.length === 0
       ? `<div class="state">No students enrolled.</div>`
       : `<div class="table-wrap">
           <table class="table">
@@ -205,20 +207,15 @@
               <th style="text-align:right;">Actions</th>
             </tr></thead>
             <tbody>
-              ${data.students.map(s => {
-                const isRemoved = s.status === 'Removed';
-                // BR: nếu user không còn là Student (bị promote), không được restore
-                const canRestore = isRemoved && s.role === 'Student';
-                const canRemove  = !isRemoved;
-
-                const actionBtns = canRemove
-                  ? `<button class="btn btn--danger btn--sm" type="button"
-                            data-action="remove-student"
-                            data-uid="${s.user_id}"
-                            data-email="${esc(s.email)}">
-                       Remove
-                     </button>`
-                    : `<span class="u-text-sm u-text-muted">N/A</span>`;
+              ${activeStudents.map(s => {
+                // Chỉ cần nút Remove, không cần Restore
+                const actionBtns = `
+                  <button class="btn btn--danger btn--sm" type="button"
+                          data-action="remove-student"
+                          data-uid="${s.user_id}"
+                          data-email="${esc(s.email)}">
+                    Remove
+                  </button>`;
 
                 return `
                 <tr>
@@ -244,7 +241,7 @@
 
        <div class="u-text-sm u-text-muted u-mt-4" style="text-transform:uppercase;
                                                         letter-spacing:.06em;">
-         Enrolled users (${data.students.length})
+         ${activeStudents.length}
        </div>
        ${studentRows}`;
   }
