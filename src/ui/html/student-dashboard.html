@@ -59,7 +59,9 @@
   <script src="/ui/js/session.js"></script>
   <script src="/ui/js/student-dashboard.js"></script>
   <script>
+    document.body.dataset.userEmail = window.MiniLMS.Api.getEmail();
     Layout.init();
+    Session.init();
   </script>
 </body>
 </html>
