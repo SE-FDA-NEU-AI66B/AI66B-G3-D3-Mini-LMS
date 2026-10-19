@@ -192,9 +192,15 @@ def get_active_user_by_email(email: str) -> dict | None:
 
 
 def role_home(role: str) -> str:
-    """Where to send a user after successful login."""
+    """
+    Where to send a user after successful login.
+
+    Must stay in sync with roleHome() in src/ui/js/session.js —
+    session.js handles the "already logged in, visiting /login" case,
+    this function handles the "just logged in via SSO" case.
+    """
     return {
         "Lecturer": "/ui/html/instructor-quizzes.html",
         "Student":  "/ui/html/student-dashboard.html",
-        "Admin":    "/docs",
+        "Admin":    "/ui/html/admin-accounts.html",
     }.get(role, "/login")

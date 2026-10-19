@@ -55,6 +55,22 @@ def apply_scheduled_publishes(conn) -> int:
         return cur.rowcount
 
 
+def get_user_role_status(email: str) -> tuple | None:
+    """
+    Return (user_id, role, status) for the given email, or None.
+
+    Used by quiz_service to gate the student-facing endpoint by role —
+    a user who was promoted to Lecturer / Admin must not keep reaching
+    the student quiz list just because their old enrollments still exist.
+    """
+    with db_config.connect() as conn, conn.cursor() as cur:
+        cur.execute(
+            'SELECT user_id, role, status FROM "user" WHERE email = %s',
+            (email,),
+        )
+        return cur.fetchone()
+
+
 def find_visible_quizzes(student_email: str) -> list[QuizListItem]:
     """
     Return the quizzes a student can see right now.

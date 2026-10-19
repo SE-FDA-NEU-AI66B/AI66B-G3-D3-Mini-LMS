@@ -2,13 +2,13 @@
    Mini-LMS — session helper
    - Fetches /api/me once per page load
    - Mirrors email into sessionStorage for api.js
-   - Updates the shared topbar user chip when the logged-in role/name
-     differs from the page's static defaults
-   - Injects a Logout button into the topbar. If the topbar has not been
-     rendered yet (Layout.init may run on a later tick in some pages),
-     a MutationObserver waits for it.
+   - Updates the shared topbar user chip
+   - Injects a Logout button if the topbar doesn't already have one
    - Redirects to /login when <body data-auth="required"> and unauthenticated
    - Redirects away from /login when already authenticated
+   - NEW: role gate — a page with data-role="student|lecturer|admin"
+     only accepts callers whose role matches. Mismatched role (e.g. an
+     admin opening a student page) is redirected to their own home.
    Served from: src/ui/js/session.js
    ========================================================================== */
 
@@ -17,13 +17,23 @@
 
   const EMAIL_KEY = 'minilms.email';
 
+  // Maps data-role="…" on <body> to the exact role string returned by
+  // the /api/me endpoint. `guest` intentionally has no mapping — public
+  // pages (login, mock-sso) accept any authenticated role.
+  const PAGE_ROLE_TO_USER_ROLE = {
+    student:  'Student',
+    lecturer: 'Lecturer',
+    admin:    'Admin',
+  };
+
   let currentUser = null;
   let ready = null;
 
   function roleHome(role) {
     if (role === 'Lecturer') return '/ui/html/instructor-quizzes.html';
     if (role === 'Student')  return '/ui/html/student-dashboard.html';
-    return '/docs';            // Admin / unknown
+    if (role === 'Admin')    return '/ui/html/admin-accounts.html';
+    return '/login';
   }
 
   function fetchMe() {
@@ -55,8 +65,6 @@
     if (user.role) chip.setAttribute('data-role', String(user.role).toLowerCase());
   }
 
-  /* --------------------------- logout button ------------------------ */
-
   function buildLogoutButton() {
     const btn = document.createElement('a');
     btn.className = 'btn btn--ghost btn--sm js-logout-btn';
@@ -70,7 +78,7 @@
   }
 
   function insertIntoTopbar(topbar) {
-    if (topbar.querySelector('.js-logout-btn')) return;   // idempotent
+    if (topbar.querySelector('.js-logout-btn')) return;
     const btn = buildLogoutButton();
     const chip = topbar.querySelector('.user-chip');
     if (chip && chip.parentNode) {
@@ -86,7 +94,6 @@
       insertIntoTopbar(topbar);
       return;
     }
-    // Topbar not yet in the DOM — wait for it to appear.
     const observer = new MutationObserver((_mutations, obs) => {
       const tb = document.querySelector('.topbar');
       if (!tb) return;
@@ -101,7 +108,15 @@
     if (btn) btn.remove();
   }
 
-  /* ------------------------------- init ----------------------------- */
+  /* ---------------- page-role gate (Fix B) ------------------------- */
+
+  function pageRequiresWrongRole(user) {
+    const pageRole = document.body.dataset.role;
+    const expected = PAGE_ROLE_TO_USER_ROLE[pageRole];
+    if (!expected) return false;                 // guest page → any role OK
+    if (!user.role) return true;                 // no role → treat as mismatch
+    return user.role !== expected;
+  }
 
   function init() {
     if (ready) return ready;
@@ -112,9 +127,16 @@
       if (user && user.email) {
         try { sessionStorage.setItem(EMAIL_KEY, user.email); } catch (e) { /* ignore */ }
 
-        // Already signed in and visiting /login → send them home.
         const path = window.location.pathname;
+
+        // Already signed in and visiting /login or /mock-sso → home.
         if (path === '/login' || path === '/mock-sso/authorize') {
+          window.location.href = roleHome(user.role);
+          return user;
+        }
+
+        // Role gate: e.g. an Admin opening a student page.
+        if (pageRequiresWrongRole(user)) {
           window.location.href = roleHome(user.role);
           return user;
         }
@@ -123,7 +145,6 @@
           updateUserChip(user);
           injectLogoutButton();
         } catch (err) {
-          // Never let top-bar chrome break the page.
           console.error('Session: failed to update top bar', err);
         }
       } else {
@@ -156,10 +177,6 @@
     removeLogoutButton();
     window.location.href = '/login';
   }
-
-  /* ------------------- late-attach safety net ----------------------- */
-  // If Layout.init() ever runs after Session.init()'s .then() (e.g. an
-  // inline script that defer-loads), retry injection on the next task.
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
