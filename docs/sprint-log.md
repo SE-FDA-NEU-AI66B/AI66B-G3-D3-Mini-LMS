@@ -175,3 +175,98 @@ Decompose the high-priority user stories into technical architecture and impleme
 | @Altimary | ✔ | ✔ | ✔ |
 | @BuiDut | ✔ | ✔ | ✔ |
 | @VizAnh | ✔ | ✔ | ✔ |
+
+
+## Sprint 3 - 5/10/2026 to 19/10/2026
+
+
+### Sprint goal
+Milestone 2 proved that your system runs. Milestone 3 proves that people can use it: every P0 story works from start to finish through your interface, with real data from the database, and every error gives the user a clear message.
+
+### Mandatory Chore Issues
+
+| Issue | Người làm | Đã đóng? |
+|-------|-----------|----------|
+| [Chore] Refine backlog for Sprint 3 | @thangkaka26 (PO) | ✔ |
+| [Chore] Sprint 3 wrap-up | @BuiDut (SM) | ✔ |
+
+### Committed
+
+| Issue | Story | Points | Owner |
+|-------|-------|--------|-------|
+| #57   | None  |    3   | @thangkaka26 |
+| #59   | #9    |    8   | @Altimary |
+| #60   | #10   |    3   | @BuiDut |
+| #61   | #11   |    8   | @thangkaka26 |
+| #62   | #12   |    5   | @VizAnh |
+| #63   | #14   |    3   | @Altimary |
+| #64   | #17   |    5   | @thangkaka26 |
+| #65   | #17   |    5   | @thangkaka26 |
+| #66   | #54   |    5   | @BuiDut |
+| #67   | #55   |    3   | @VizAnh |
+| #68   | #56   |    5   | @thangkaka26 + @Alitmary |
+
+
+**Total committed: 53 points**
+
+### Result
+
+| Issue | Points | Status | If not done, why |
+|-------|--------|--------|------------------|
+| #57   |   3    | Done | |
+| #59   |   8    | Done | |
+| #60   |   3    | Done | |
+| #61   |   8    | Done | |
+| #62   |   5    | Done | |
+| #63   |   3    | Done | |
+| #64   |   5    | Done | |
+| #65   |   5    | Done | |
+| #66   |   5    | Done | |
+| #67   |   3    | Done | |
+| #68   |   5    | Done | |
+
+
+
+
+**Goal:** P0 stories features function well.   
+**Completed:** 53 points.  
+**Velocity:** 53  
+**Not finished:** None  
+**SM Sprint 4:** @VizAnh
+
+### Sprint Review
+
+#### What we demonstrated:
+
+- P0 features are implemented.
+- P0 features worked from database to UI.
+- Error messages appear if violates BRs or exceptions.
+
+#### Feedback received:
+The features for P0 storis are worked that are ready for next technical implementation.
+
+#### Backlog changes as a result:
+Decompose the high-priority user stories into technical architecture and implementation task for the next
+
+## Retrospective
+
+| Keep doing | Stop doing | Start doing |
+|------------|------------|-------------|
+| Maintaining clear task delegation and effective cross-review | Merging documentation and finalizing exports right before the deadline | Deep testing & exception handling for features |
+| Keeping GitHub Project boards and branch naming standardized | Delaying reviews on open pull requests | Improve UI |
+
+**One concrete action for next sprint (with an owner):**
+
+<!-- A retro that produces no action item is a complaint session.
+     Exactly one action, one owner, checked at the next retro. -->
+
+- Handling remaining bugs and improve UI (PO: @thangkaka26)
+
+### Attendance
+
+| Member | Planning | Review | Retro |
+|--------|:----------:|:--------:|:-------:|
+| @thangkaka26 | ✔ | ✔ | ✔ |
+| @Altimary | ✔ | ✔ | ✔ |
+| @BuiDut | ✔ | ✔ | ✔ |
+| @VizAnh | ✔ | ✔ | ✔ |
