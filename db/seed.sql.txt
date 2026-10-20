@@ -47,10 +47,20 @@ INSERT INTO quiz (quiz_id, course_id, created_by, title, time_limit_min, due_at,
   (9,  3, 3, 'FIN101 Midterm Quiz',  30, '2026-11-20 23:59', 'Published'),
   (10, 3, 3, 'FIN101 Weekly Quiz 1', 15, '2026-11-05 23:59', 'Published'),
   (11, 3, 3, 'FIN101 Weekly Quiz 2', 15, '2026-11-12 23:59', 'Published'),
-  (12, 3, 3, 'FIN101 Final Review',  45, '2026-12-14 23:59', 'Draft');
-SELECT setval('quiz_quiz_id_seq', 12);
+  (12, 3, 3, 'FIN101 Final Review',  45, '2026-12-14 23:59', 'Draft'),
+  
+  -- ==================== NEW OVERDUE QUIZZES ====================
+  -- Quiz 13 (Course 1 - Covers all students - Instructor 2)
+  (13, 1, 2, 'ACC101 Overdue Quiz',  15, '2024-01-01 23:59', 'Published'),
+  -- Quiz 14 (Course 2 - Covers students 4-9 - Instructor 2)
+  (14, 2, 2, 'ACC201 Overdue Quiz',  15, '2024-01-02 23:59', 'Published'),
+  -- Quiz 15 (Course 3 - Covers students 10-13 - Instructor 3)
+  (15, 3, 3, 'FIN101 Overdue Quiz',  15, '2024-01-03 23:59', 'Published');
 
--- ================== QUESTIONS (4 per quiz = 48 total) ===============
+SELECT setval('quiz_quiz_id_seq', 15);
+
+-- ================== QUESTIONS (4 per quiz = 60 total) ===============
+-- Tự động sinh câu hỏi cho cả 15 quiz (kể cả 3 quiz overdue mới thêm)
 INSERT INTO question (quiz_id, position, question_type, prompt, accepted_answers, points)
 SELECT
     q.quiz_id,
@@ -64,6 +74,7 @@ FROM quiz q
 CROSS JOIN generate_series(1, 4) AS g(pos);
 
 -- ==================== OPTIONS (4 per MCQ question) ==================
+-- Tự động sinh đáp án cho các câu hỏi MCQ của cả 15 quiz
 INSERT INTO option (question_id, label, text, is_correct)
 SELECT
     q.question_id,

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini-LMS · My Courses</title>
+  <link rel="stylesheet" href="/ui/css/mini-lms.css" />
+</head>
+
+<body
+  data-role="student"
+  data-user-name="Student"
+  data-user-email=""
+  data-active="courses"
+  data-brand-sub="Student"
+  data-auth="required">
+
+  <div class="app-shell">
+    <div class="app-body">
+      <main class="app-main">
+        <div class="app-container">
+
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">My Courses</h1>
+              <p class="page-sub">Select a course to view its quizzes.</p>
+            </div>
+            <button class="btn btn--ghost" type="button" id="refresh-btn">
+              Refresh
+            </button>
+          </div>
+
+          <div id="alert-area"></div>
+
+          <section class="card">
+            <div id="list-area">
+              <div class="state">
+                <span class="spinner" aria-hidden="true"></span>
+                <div class="state__title u-mt-2">Loading courses…</div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/ui/js/layout.js"></script>
+  <script src="/ui/js/api.js"></script>
+  <script src="/ui/js/session.js"></script>
+  <script src="/ui/js/student-courses.js"></script>
+  <script>
+    document.body.dataset.userEmail = window.MiniLMS.Api.getEmail();
+    Layout.init();
+    Session.init();
+  </script>
+</body>
+</html>

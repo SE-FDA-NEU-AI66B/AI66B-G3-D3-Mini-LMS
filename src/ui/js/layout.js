@@ -1,7 +1,7 @@
 /* ==========================================================================
    Mini-LMS — shared layout renderer
    Served from: src/ui/js/layout.js
-   Version: v5-nav
+   Version: v7-nav (added courses for student and lecturer)
 
    Approved changes:
      - Top bar renders the Logout button directly for non-guest roles.
@@ -11,12 +11,13 @@
      - NAV hrefs point at the real static HTML pages instead of the
        placeholder SPA paths. Admin sidebar now lists Accounts then
        Courses, matching the post-login default landing page.
+     - Student and Lecturer sidebars now include "My Courses".
    ========================================================================== */
 
 (function (global) {
   'use strict';
 
-  const LAYOUT_VERSION = 'v5-nav';
+  const LAYOUT_VERSION = 'v7-nav';
 
   /* ---------------------------------------------------------------- */
   /* One-shot legacy cleanup.                                          */
@@ -74,10 +75,14 @@
     student: [
       { id: 'dashboard', label: 'Dashboard',  href: '/ui/html/student-dashboard.html',
         icon: '<path d="M4 6h16M4 12h16M4 18h10"/>' },
+      { id: 'courses',   label: 'My Courses', href: '/ui/html/student-courses.html',
+        icon: '<path d="M12 4L4 8l8 4 8-4-8-4zM4 12l8 4 8-4M4 16l8 4 8-4"/>' },
       { id: 'results',   label: 'My results', href: '/results',
         icon: '<path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6"/>' },
     ],
     lecturer: [
+      { id: 'courses', label: 'My Courses', href: '/ui/html/instructor-courses.html',
+        icon: '<path d="M12 4L4 8l8 4 8-4-8-4zM4 12l8 4 8-4M4 16l8 4 8-4"/>' },
       { id: 'quizzes', label: 'My quizzes', href: '/ui/html/instructor-quizzes.html',
         icon: '<path d="M4 4h16v12H4zM8 20h8M12 16v4"/>' },
     ],

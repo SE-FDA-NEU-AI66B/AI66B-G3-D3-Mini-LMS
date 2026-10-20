@@ -32,22 +32,13 @@
 
           <div id="alert-area"></div>
 
-          <section class="card">
-            <div class="card__head">
-              <div>
-                <h2 class="card__title">Available quizzes</h2>
-                <p class="card__hint">
-                  Only quizzes with a future due date are listed.
-                </p>
-              </div>
+          <!-- CHỈ ĐỂ LẠI THẺ DIV NÀY. JS SẼ TỰ ĐỘNG VẼ CARD VÀO ĐÂY -->
+          <div id="list-area">
+            <div class="state">
+              <span class="spinner" aria-hidden="true"></span>
+              <div class="state__title u-mt-2">Loading quizzes…</div>
             </div>
-            <div id="list-area">
-              <div class="state">
-                <span class="spinner" aria-hidden="true"></span>
-                <div class="state__title u-mt-2">Loading quizzes…</div>
-              </div>
-            </div>
-          </section>
+          </div>
 
         </div>
       </main>
@@ -59,7 +50,9 @@
   <script src="/ui/js/session.js"></script>
   <script src="/ui/js/student-dashboard.js"></script>
   <script>
+    document.body.dataset.userEmail = window.MiniLMS.Api.getEmail();
     Layout.init();
+    Session.init();
   </script>
 </body>
 </html>
