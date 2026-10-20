@@ -26,6 +26,10 @@ class QuizListItem(BaseModel):
     course_code: str = Field(..., description="Course code, e.g. ACC101")
     due_at: datetime = Field(..., description="Submission deadline (UTC)")
     time_limit_min: int = Field(..., description="Time limit in minutes (5–120)")
+    # NEW: Differentiates upcoming quizzes from missed ones
+    availability: Literal['available', 'overdue'] = Field(
+        ..., description="Whether the quiz can still be taken or is past due"
+    )
 
 
 class QuizListResponse(BaseModel):
@@ -34,6 +38,26 @@ class QuizListResponse(BaseModel):
     student_email: str
     count: int
     quizzes: list[QuizListItem]
+
+
+# ----------------------------------------------------------------------
+# Student — course listing
+# ----------------------------------------------------------------------
+
+class StudentCourseSummary(BaseModel):
+    """One row in GET /api/student/courses."""
+    course_id: int
+    code: str
+    name: str
+    lecturer_name: str
+    quiz_count: int
+
+
+class StudentCourseListResponse(BaseModel):
+    """Envelope returned by GET /api/student/courses."""
+    student_email: str
+    count: int
+    courses: list[StudentCourseSummary]
 
 
 # ----------------------------------------------------------------------

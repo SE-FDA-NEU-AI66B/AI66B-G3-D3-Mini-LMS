@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini-LMS · Course Quizzes</title>
+  <link rel="stylesheet" href="/ui/css/mini-lms.css" />
+</head>
+
+<body
+  data-role="student"
+  data-user-name="Student"
+  data-user-email=""
+  data-active="courses"
+  data-brand-sub="Student"
+  data-auth="required">
+
+  <div class="app-shell">
+    <div class="app-body">
+      <main class="app-main">
+        <div class="app-container">
+
+          <div class="page-head">
+            <div>
+              <a href="/ui/html/student-courses.html" class="u-text-sm" style="text-decoration:none; display:inline-block; margin-bottom:8px;">
+                ← Back to My Courses
+              </a>
+              <h1 class="page-title" id="page-title">Course Quizzes</h1>
+              <p class="page-sub" id="page-sub">Loading course details…</p>
+            </div>
+            <button class="btn btn--ghost" type="button" id="refresh-btn">
+              Refresh
+            </button>
+          </div>
+
+          <div id="alert-area"></div>
+
+          <!-- Available Quizzes Section (Hidden by default) -->
+          <section class="card" id="available-card" hidden>
+            <div class="card__head">
+              <div>
+                <h2 class="card__title">Available Quizzes</h2>
+                <p class="card__hint">Quizzes you can still take.</p>
+              </div>
+            </div>
+            <div id="available-area"></div>
+          </section>
+
+          <!-- Overdue Quizzes Section (Hidden by default) -->
+          <section class="card" id="overdue-card" hidden>
+            <div class="card__head">
+              <div>
+                <h2 class="card__title">Overdue Quizzes</h2>
+                <p class="card__hint">The due date for these quizzes has passed.</p>
+              </div>
+            </div>
+            <div id="overdue-area"></div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/ui/js/layout.js"></script>
+  <script src="/ui/js/api.js"></script>
+  <script src="/ui/js/session.js"></script>
+  <script src="/ui/js/student-course-detail.js"></script>
+  <script>
+    document.body.dataset.userEmail = window.MiniLMS.Api.getEmail();
+    Layout.init();
+    Session.init();
+  </script>
+</body>
+</html>

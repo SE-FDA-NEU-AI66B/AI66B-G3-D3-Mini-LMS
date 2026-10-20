@@ -9,8 +9,8 @@
 
 <body
   data-role="lecturer"
-  data-user-name="Pham Thi Lan"
-  data-user-email="lanpt@univ.edu"
+  data-user-name="Lecturer"
+  data-user-email=""
   data-active="quizzes"
   data-brand-sub="Lecturer"
   data-auth="required">
@@ -22,10 +22,17 @@
 
           <div class="page-head">
             <div>
-              <h1 class="page-title">My quizzes</h1>
-              <p class="page-sub">Create and manage quizzes for the courses you teach.</p>
+              <!-- Nút Back (Mặc định bị ẩn, JS sẽ bật lên nếu có course_id) -->
+              <div id="back-link-container" hidden style="margin-bottom: 8px;">
+                <a href="/ui/html/instructor-courses.html" class="u-text-sm" style="text-decoration:none;">
+                  ← Back to My Courses
+                </a>
+              </div>
+              
+              <h1 class="page-title" id="page-title">My quizzes</h1>
+              <p class="page-sub" id="page-sub">Create and manage quizzes for the courses you teach.</p>
             </div>
-            <a class="btn btn--primary" href="/ui/html/instructor-quiz-edit.html">
+            <a class="btn btn--primary" id="new-quiz-btn" href="/ui/html/instructor-quiz-edit.html">
               + New quiz
             </a>
           </div>
@@ -35,7 +42,7 @@
           <section class="card">
             <div class="card__head">
               <div>
-                <h2 class="card__title">All quizzes</h2>
+                <h2 class="card__title" id="card-title">All quizzes</h2>
                 <p class="card__hint">Draft quizzes are visible only to you.</p>
               </div>
               <button class="btn btn--ghost btn--sm" type="button" id="refresh-btn">
@@ -61,6 +68,13 @@
   <script src="/ui/js/instructor-quizzes.js"></script>
   <script>
     document.body.dataset.userEmail = window.MiniLMS.Api.getEmail();
+    
+    // Đổi menu active sang "My Courses" nếu đang xem 1 khóa học cụ thể
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('course_id')) {
+      document.body.dataset.active = 'courses';
+    }
+    
     Layout.init();
     Session.init();
   </script>
