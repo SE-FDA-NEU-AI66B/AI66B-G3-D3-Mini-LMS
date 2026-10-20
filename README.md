@@ -18,7 +18,7 @@ Instructors create quizzes, students take them, and the system automatically gra
 |Sprint 1| @thangkaka26 |
 |Sprint 2| @Altimary |
 |Sprint 3| @BuiDut |
-|Sprint 4| |
+|Sprint 4| @VizAnh |
 |Sprint 5| |
 
 ## Setup
@@ -42,10 +42,9 @@ python db/verify_db.py
 python src/app.py
 ```
 ### Open these URLs when server is established
-→ http://127.0.0.1:8000/  
-→ http://localhost:8000/  
-→ http://localhost:8000/docs  
-→ http://localhost:8000/api/quizzes?email=minhhd@univ.edu  
+→ Entry: http://localhost:8000/login (see `db/seed.sql.txt` for auth info)  
+→ APIs: http://localhost:8000/docs  
+→ Example API: http://localhost:8000/api/quizzes?email=minhhd@univ.edu  
 Not to open `0.0.0.0:8000` because it is the bind address, not a browsable host.
 
 > For detail setup guides for other OSs, see in `docs\SETUP.md`.
