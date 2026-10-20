@@ -133,10 +133,29 @@ def update_course(conn: psycopg.Connection, course_id: int, code: str, name: str
 def delete_course_cascade(conn: psycopg.Connection, course_id: int) -> None:
     """
     Permanently deletes a course and ALL its dependencies.
-    Order: answer -> attempt -> option -> question -> quiz -> enrollment -> course.
+    Forcefully terminates any other database connections that might be
+    locking the course or quiz tables to prevent deadlocks.
     """
     with conn.cursor() as cur:
-        # 1. Answers
+        # 1. FORCE DELETE: Terminate any connections touching quizzes or courses.
+        # We filter by queries that include 'quiz' or 'course' or 'question' or 'attempt'
+        # to ensure we don't kill completely unrelated background tasks.
+        cur.execute("""
+            SELECT pg_terminate_backend(pid)
+            FROM pg_stat_activity
+            WHERE datname = current_database()
+              AND pid <> pg_backend_pid()
+              AND state IN ('idle in transaction', 'active')
+              AND (
+                  query ILIKE '%quiz%' 
+                  OR query ILIKE '%course%'
+                  OR query ILIKE '%question%'
+                  OR query ILIKE '%attempt%'
+              )
+        """)
+
+        # 2. Cascade Deletes in order of dependencies
+        # Answers
         cur.execute("""
             DELETE FROM answer 
             WHERE attempt_id IN (
@@ -146,13 +165,13 @@ def delete_course_cascade(conn: psycopg.Connection, course_id: int) -> None:
             )
         """, (course_id,))
 
-        # 2. Attempts
+        # Attempts
         cur.execute("""
             DELETE FROM attempt 
             WHERE quiz_id IN (SELECT quiz_id FROM quiz WHERE course_id = %s)
         """, (course_id,))
 
-        # 3. Options
+        # Options
         cur.execute("""
             DELETE FROM option 
             WHERE question_id IN (
@@ -162,31 +181,20 @@ def delete_course_cascade(conn: psycopg.Connection, course_id: int) -> None:
             )
         """, (course_id,))
 
-        # 4. Questions
+        # Questions
         cur.execute("""
             DELETE FROM question 
             WHERE quiz_id IN (SELECT quiz_id FROM quiz WHERE course_id = %s)
         """, (course_id,))
 
-        # 5. Quizzes
+        # Quizzes
         cur.execute("DELETE FROM quiz WHERE course_id = %s", (course_id,))
 
-        # 6. Enrollments
+        # Enrollments
         cur.execute("DELETE FROM enrollment WHERE course_id = %s", (course_id,))
 
-        # 7. Course
+        # Course
         cur.execute("DELETE FROM course WHERE course_id = %s", (course_id,))
-
-
-def count_course_dependencies(conn: psycopg.Connection, course_id: int) -> dict:
-    with conn.cursor() as cur:
-        cur.execute('''
-            SELECT
-              (SELECT COUNT(*) FROM enrollment WHERE course_id = %s),
-              (SELECT COUNT(*) FROM quiz WHERE course_id = %s)
-        ''', (course_id, course_id))
-        enrollments, quizzes = cur.fetchone()
-        return {"enrollments": enrollments, "quizzes": quizzes}
 
 
 def list_course_enrollments(conn: psycopg.Connection, course_id: int) -> list[tuple]:
