@@ -1,9 +1,5 @@
 """
 admin.py — request/response shapes for admin endpoints (US06, US11, US12).
-
-Only safe fields are exposed: `password` / `password_hash` never appear
-in any response. The single-user GET returns the same `UserAdminResponse`
-shape as the list endpoint.
 """
 
 from __future__ import annotations
@@ -42,7 +38,6 @@ class UserUpdateRequest(BaseModel):
 
 
 class UserAdminResponse(BaseModel):
-    """Safe shape used for list / get / create / update responses."""
     user_id: int
     email: str
     full_name: str
@@ -62,8 +57,20 @@ class UserDeleteResponse(BaseModel):
 
 
 # ----------------------------------------------------------------------
-# Courses (read-only roster view for US06's "per course" listing)
+# Courses (US11)
 # ----------------------------------------------------------------------
+
+class CourseCreateRequest(BaseModel):
+    code: str = Field(..., min_length=1, max_length=20, description="Course code e.g. ACC101")
+    name: str = Field(..., min_length=1, max_length=255)
+    lecturer_id: int = Field(..., gt=0, description="ID of the assigned lecturer")
+
+
+class CourseUpdateRequest(BaseModel):
+    code: str | None = Field(default=None, min_length=1, max_length=20)
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    lecturer_id: int | None = Field(default=None, gt=0)
+
 
 class AdminCourseResponse(BaseModel):
     course_id: int
@@ -80,15 +87,22 @@ class AdminCourseListResponse(BaseModel):
     courses: list[AdminCourseResponse]
 
 
+class CourseDeleteResponse(BaseModel):
+    deleted: bool
+    course_id: int
+
+
+# ----------------------------------------------------------------------
+# Roster & Enrollments
+# ----------------------------------------------------------------------
+
 class CourseRosterEntry(BaseModel):
     user_id: int
     email: str
     full_name: str
-    status: str                    # enrollment status: Active / Removed
+    status: str
     enrolled_at: datetime
-    role: str = Field(                # NEW — user's global role
-        ..., description="User's global role: Student | Lecturer | Admin"
-    )
+    role: str
 
 
 class CourseRosterResponse(BaseModel):
