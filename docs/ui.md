@@ -31,7 +31,7 @@ page redirects to the role home instead of showing the form). The
 **Sign in** button navigates to `/mock-sso/authorize`; that form POSTs to
 `/mock-sso/authorize` and receives `{redirect: "/auth/callback?code=…"}`.
 
-![Login](.\images\ui-login.png)
+![Login](./images/ui-login.png)
 
 ---
 
@@ -45,15 +45,15 @@ the session cookie takes priority on the server).
 
 **Loading quizzes**:
 
-![Dashboard — loading](.\images\ui-student-dashboard-loading.png)
+![Dashboard — loading](./images/ui-student-dashboard-loading.png)
 
 **No available quiz**:
 
-![Dashboard — empty](.\images\ui-student-dashboard-empty.png)
+![Dashboard — empty](./images/ui-student-dashboard-empty.png)
 
 **Quizzes**:
 
-![Dashboard — data](.\images\ui-student-dashboard.png)
+![Dashboard — data](./images/ui-student-dashboard.png)
 
 ---
 
@@ -63,7 +63,7 @@ the session cookie takes priority on the server).
 **The user comes here to** see every course they are enrolled in.
 **Calls:** `GET /api/student/courses`
 
-![My Courses](.\images\ui-student-courses.png)
+![My Courses](./images/ui-student-courses.png)
 
 ---
 
@@ -74,7 +74,7 @@ the session cookie takes priority on the server).
 available and overdue.
 **Calls:** `GET /api/student/courses/{course_id}/quizzes`
 
-![Course detail](.\images\ui-student-course-detail.png)
+![Course detail](./images/ui-student-course-detail.png)
 
 ---
 
@@ -91,7 +91,7 @@ countdown runs out.
 `POST /api/attempts/{id}/submit`,
 `POST /api/attempts/{id}/release` (via `sendBeacon` on unload)
 
-![Take quiz](.\images\ui-quiz-take.png)
+![Take quiz](./images/ui-quiz-take.png)
 
 ---
 
@@ -101,7 +101,7 @@ countdown runs out.
 **The user comes here to** see the score of a quiz they just submitted.
 **Calls:** `GET /api/attempts/{id}/result`
 
-![Quiz result](.\images\ui-quiz-result.png)
+![Quiz result](./images/ui-quiz-result.png)
 
 ---
 
@@ -113,7 +113,7 @@ administrator.
 **Calls:** `GET /api/instructor/courses`
 
 
-![Instructor courses](.\images\ui-instructor-courses.png)
+![Instructor courses](./images/ui-instructor-courses.png)
 
 ---
 
@@ -129,7 +129,7 @@ delete them.
 `POST /api/instructor/quizzes/{id}/unpublish`,
 `DELETE /api/instructor/quizzes/{id}`
 
-![Instructor quizzes](.\images\ui-instructor-quizzes.png)
+![Instructor quizzes](./images/ui-instructor-quizzes.png)
 
 ---
 
@@ -143,7 +143,7 @@ delete them.
 `POST /api/instructor/quizzes/{id}/publish` · `POST /api/instructor/quizzes/{id}/unpublish`,
 `POST /api/instructor/quizzes/{id}/questions` · `PUT`/`DELETE .../questions/{qid}`
 
-![Quiz editor](.\images\ui-quiz-editor.png)
+![Quiz editor](./images/ui-quiz-editor.png)
 
 ---
 
@@ -156,7 +156,7 @@ delete them.
 `POST /api/admin/accounts` · `GET /api/admin/accounts/{id}`,
 `PATCH /api/admin/accounts/{id}` · `DELETE /api/admin/accounts/{id}`
 
-![Admin accounts](.\images\ui-account-listing.png)
+![Admin accounts](./images/ui-account-listing.png)
 
 ---
 
@@ -167,7 +167,7 @@ delete them.
 open the roster to enroll students.
 **Calls:** `GET /api/admin/courses`
 
-![Admin courses — list](.\images\ui-admin-courses.png)
+![Admin courses — list](./images/ui-admin-courses.png)
 
 ---
 
@@ -180,7 +180,7 @@ assigned lecturer.
 `GET  /api/admin/accounts?role=Lecturer` (populate dropdown),
 `POST /api/admin/courses` (create) · `PUT /api/admin/courses/{id}` (edit)
 
-![Admin courses — course modal](.\images\ui-course-editor.png)
+![Admin courses — course modal](./images/ui-course-editor.png)
 
 ---
 
@@ -195,7 +195,7 @@ or remove a student.
 `DELETE /api/admin/courses/{id}/enrollments/{student_id}`
 
 
-![Admin courses — roster modal](.\images\ui-course-roster.png)
+![Admin courses — roster modal](./images/ui-course-roster.png)
 
 ---
 
