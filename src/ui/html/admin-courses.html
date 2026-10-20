@@ -23,13 +23,12 @@
           <div class="page-head">
             <div>
               <h1 class="page-title">Courses</h1>
-              <p class="page-sub">
-                Courses with their lecturer and enrolled students.
-              </p>
+              <p class="page-sub">Manage courses, assign lecturers, and handle enrollments.</p>
             </div>
-            <button class="btn btn--ghost" type="button" id="refresh-btn">
-              Refresh
-            </button>
+            <div class="u-flex u-gap-2">
+              <button class="btn btn--ghost" type="button" id="refresh-btn">Refresh</button>
+              <button class="btn btn--primary" type="button" id="new-course-btn">+ New course</button>
+            </div>
           </div>
 
           <div id="alert-area"></div>
@@ -56,36 +55,56 @@
 
   <div id="modal-backdrop" class="sidebar-backdrop"></div>
 
+  <!-- ============================== Course Modal ============================== -->
+  <div id="course-modal" style="position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+    <div class="card" style="width:100%; max-width:500px; margin:0;">
+      <div class="card__head">
+        <h2 class="card__title" id="course-modal-title">New course</h2>
+        <button class="btn btn--ghost btn--sm" type="button" id="course-modal-close">Close</button>
+      </div>
+      <div class="card__body">
+        <form id="course-form" novalidate>
+          <div class="field">
+            <label for="course-code">Course Code <span class="req">*</span></label>
+            <input class="input" id="course-code" type="text" placeholder="e.g. CS101" required maxlength="20" />
+          </div>
+          <div class="field u-mt-4">
+            <label for="course-name">Course Name <span class="req">*</span></label>
+            <input class="input" id="course-name" type="text" placeholder="e.g. Intro to Computer Science" required maxlength="255" />
+          </div>
+          <div class="field u-mt-4">
+            <label for="course-lecturer">Assigned Lecturer <span class="req">*</span></label>
+            <select class="select" id="course-lecturer" required>
+              <option value="">Loading lecturers...</option>
+            </select>
+          </div>
+          <div class="u-mt-6 u-flex u-justify-between u-items-center">
+            <div class="field__error" id="course-error" hidden></div>
+            <div class="u-flex u-gap-2">
+              <button type="button" class="btn btn--ghost" id="course-modal-cancel">Cancel</button>
+              <button type="submit" class="btn btn--primary" id="course-save-btn">Save course</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- ============================== Roster modal ============================== -->
-  <!-- Outer wrapper centers; the card is capped at viewport height so the -->
-  <!-- Close button stays visible. The card body scrolls internally when -->
-  <!-- the roster has many students. -->
-  <div id="roster-modal"
-       style="position:fixed; inset:0; z-index:60; display:none;
-              align-items:center; justify-content:center; padding:20px;
-              overflow-y:auto;">
-    <div class="card"
-         style="width:100%; max-width:820px; margin:0;
-                max-height:calc(100vh - 40px);
-                display:flex; flex-direction:column;">
+  <div id="roster-modal" style="position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+    <div class="card" style="width:100%; max-width:820px; margin:0; max-height:calc(100vh - 40px); display:flex; flex-direction:column;">
       <div class="card__head" style="flex-shrink:0;">
         <div>
           <h2 class="card__title" id="roster-title">Course roster</h2>
           <p class="card__hint" id="roster-sub"></p>
         </div>
         <div class="u-flex u-gap-2">
-          <!-- NÚT MỚI: Thêm sinh viên -->
-          <button class="btn btn--primary btn--sm" type="button" id="add-student-btn">
-            + Add student
-          </button>
+          <button class="btn btn--primary btn--sm" type="button" id="add-student-btn">+ Add student</button>
           <button class="btn btn--ghost btn--sm" type="button" id="modal-close">Close</button>
         </div>
       </div>
-
       <div id="roster-alert" class="u-mt-4" style="padding: 0 20px;"></div>
-
-      <div class="card__body" id="roster-body"
-           style="overflow-y:auto; flex:1 1 auto; min-height:0;">
+      <div class="card__body" id="roster-body" style="overflow-y:auto; flex:1 1 auto; min-height:0;">
         <div class="state">
           <span class="spinner" aria-hidden="true"></span>
           <div class="state__title u-mt-2">Loading roster…</div>
@@ -94,11 +113,8 @@
     </div>
   </div>
 
-    <!-- ============================== Add Student Modal ============================== -->
-  <div id="add-student-modal"
-       style="position:fixed; inset:0; z-index:70; display:none;
-              align-items:center; justify-content:center; padding:20px;
-              overflow-y:auto;">
+  <!-- ============================== Add Student Modal ============================== -->
+  <div id="add-student-modal" style="position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
     <div class="card" style="width:100%; max-width:480px; margin:0;">
       <div class="card__head">
         <h2 class="card__title">Add student to course</h2>

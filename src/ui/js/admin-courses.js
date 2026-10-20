@@ -1,8 +1,5 @@
 /* ==========================================================================
    Mini-LMS — admin courses page controller
-   Lists courses; opens a roster modal with lecturer + enrolled students.
-   FULL CRUD for student enrollments + client-side BR enforcement.
-   Served from: src/ui/js/admin-courses.js
    ========================================================================== */
 
 (function () {
@@ -10,12 +7,27 @@
 
   const { Api, esc, fmtDateTime } = window.MiniLMS;
 
+  // DOM Elements
   const alertArea   = document.getElementById('alert-area');
   const listArea    = document.getElementById('list-area');
   const summaryEl   = document.getElementById('courses-summary');
   const refreshBtn  = document.getElementById('refresh-btn');
+  const newCourseBtn = document.getElementById('new-course-btn');
 
-  const modal       = document.getElementById('roster-modal');
+  // Course Modal
+  const courseModal = document.getElementById('course-modal');
+  const courseForm  = document.getElementById('course-form');
+  const courseModalTitle = document.getElementById('course-modal-title');
+  const courseModalClose = document.getElementById('course-modal-close');
+  const courseModalCancel = document.getElementById('course-modal-cancel');
+  const inputCode   = document.getElementById('course-code');
+  const inputName   = document.getElementById('course-name');
+  const selectLec   = document.getElementById('course-lecturer');
+  const courseError = document.getElementById('course-error');
+  const courseSaveBtn = document.getElementById('course-save-btn');
+
+  // Roster Modal
+  const rosterModal = document.getElementById('roster-modal');
   const modalBackdrop = document.getElementById('modal-backdrop');
   const modalClose  = document.getElementById('modal-close');
   const rosterTitle = document.getElementById('roster-title');
@@ -23,6 +35,7 @@
   const rosterBody  = document.getElementById('roster-body');
   const rosterAlert = document.getElementById('roster-alert');
 
+  // Add Student Modal
   const addBtn      = document.getElementById('add-student-btn');
   const addModal    = document.getElementById('add-student-modal');
   const addClose    = document.getElementById('add-student-close');
@@ -32,22 +45,21 @@
   const addError    = document.getElementById('add-student-error');
   const addSaveBtn  = document.getElementById('add-student-save');
 
+  let editingCourseId = null;
   let currentCourseId = null;
-  let currentRoster   = null;  // lưu roster hiện tại để enforce BR phía client
+  let currentRoster   = null;
 
   /* ------------------------------ alerts ---------------------------- */
 
   function showAlert(kind, message) {
-    alertArea.innerHTML =
-      `<div class="alert alert--${kind}" role="alert"><div>${esc(message)}</div></div>`;
+    alertArea.innerHTML = `<div class="alert alert--${kind}" role="alert"><div>${esc(message)}</div></div>`;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function clearAlert() { alertArea.innerHTML = ''; }
 
   function showRosterAlert(kind, message) {
-    rosterAlert.innerHTML =
-      `<div class="alert alert--${kind}" role="alert"><div>${esc(message)}</div></div>`;
+    rosterAlert.innerHTML = `<div class="alert alert--${kind}" role="alert"><div>${esc(message)}</div></div>`;
   }
 
   function clearRosterAlert() { rosterAlert.innerHTML = ''; }
@@ -60,45 +72,26 @@
   }
 
   function roleBadge(role) {
-    const klass =
-      role === 'Admin'    ? 'badge--admin'    :
-      role === 'Lecturer' ? 'badge--lecturer' :
-                            'badge--student';
+    const klass = role === 'Admin' ? 'badge--admin' : role === 'Lecturer' ? 'badge--lecturer' : 'badge--student';
     return `<span class="badge ${klass}"><span class="badge__dot"></span>${esc(role)}</span>`;
   }
 
-  /* --------------------------- four states -------------------------- */
+  /* --------------------------- list states -------------------------- */
 
   function renderLoading() {
     summaryEl.textContent = 'Loading…';
-    listArea.innerHTML =
-      `<div class="state">` +
-        `<span class="spinner" aria-hidden="true"></span>` +
-        `<div class="state__title u-mt-2">Loading courses…</div>` +
-      `</div>`;
+    listArea.innerHTML = `<div class="state"><span class="spinner"></span><div class="state__title u-mt-2">Loading courses…</div></div>`;
   }
 
   function renderError(err) {
     summaryEl.textContent = 'Could not load courses.';
-    listArea.innerHTML =
-      `<div class="state">` +
-        `<div class="state__title">Could not load courses</div>` +
-        `<div>${esc(err.message)}</div>` +
-        `<div class="state__actions">` +
-          `<button class="btn btn--ghost" type="button" id="retry-btn">Try again</button>` +
-        `</div>` +
-      `</div>`;
-    const retry = document.getElementById('retry-btn');
-    if (retry) retry.addEventListener('click', load);
+    listArea.innerHTML = `<div class="state"><div class="state__title">Could not load courses</div><div>${esc(err.message)}</div></div>`;
+    showAlert('danger', 'Failed to load courses: ' + err.message);
   }
 
   function renderEmpty() {
     summaryEl.textContent = 'No courses yet.';
-    listArea.innerHTML =
-      `<div class="state">` +
-        `<div class="state__title">No courses</div>` +
-        `<div>Once an administrator creates courses, they will appear here.</div>` +
-      `</div>`;
+    listArea.innerHTML = `<div class="state"><div class="state__title">No courses</div><div>Click "+ New course" to create one.</div></div>`;
   }
 
   function renderList(data) {
@@ -116,24 +109,24 @@
         </td>
         <td class="num">${c.student_count}</td>
         <td class="u-text-right">
-          <button class="btn btn--ghost btn--sm" type="button"
-                  data-action="view-roster" data-cid="${c.course_id}">
-            View roster
-          </button>
+          <div class="u-flex u-gap-2" style="justify-content:flex-end;">
+            <button class="btn btn--ghost btn--sm" type="button" data-action="view-roster" data-cid="${c.course_id}">Roster</button>
+            <button class="btn btn--ghost btn--sm" type="button" data-action="edit-course" data-cid="${c.course_id}">Edit</button>
+            <button class="btn btn--danger btn--sm" type="button" data-action="delete-course" data-cid="${c.course_id}" data-code="${esc(c.code)}">Delete</button>
+          </div>
         </td>
       </tr>`).join('');
 
-    listArea.innerHTML =
-      `<div class="table-wrap">` +
-        `<table class="table">` +
-          `<thead><tr>` +
-            `<th class="num">ID</th><th>Code</th><th>Name</th>` +
-            `<th>Lecturer</th><th class="num">Students</th>` +
-            `<th style="text-align:right;">Actions</th>` +
-          `</tr></thead>` +
-          `<tbody>${rows}</tbody>` +
-        `</table>` +
-      `</div>`;
+    listArea.innerHTML = `
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr>
+            <th class="num">ID</th><th>Code</th><th>Name</th><th>Lecturer</th><th class="num">Students</th>
+            <th style="text-align:right;">Actions</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
   }
 
   /* ------------------------------ load ------------------------------ */
@@ -149,15 +142,56 @@
     }
   }
 
-  /* ------------------------------ modal ----------------------------- */
+  /* -------------------------- Course Modal -------------------------- */
 
-  function openModal() {
-    modal.style.display = 'flex';
+  async function loadLecturers() {
+    selectLec.innerHTML = '<option value="">Loading...</option>';
+    try {
+      const data = await Api.get('/api/admin/accounts?role=Lecturer');
+      selectLec.innerHTML = '<option value="">-- Select Lecturer --</option>' + 
+        data.users.map(u => `<option value="${u.user_id}">${esc(u.full_name)} (${esc(u.email)})</option>`).join('');
+    } catch (err) {
+      selectLec.innerHTML = '<option value="">Error loading lecturers</option>';
+    }
+  }
+
+  async function openCourseModal(course) {
+    editingCourseId = course ? course.course_id : null;
+    courseError.hidden = true;
+    
+    await loadLecturers();
+
+    if (course) {
+      courseModalTitle.textContent = `Edit Course: ${course.code}`;
+      inputCode.value = course.code;
+      inputName.value = course.name;
+      selectLec.value = String(course.lecturer_id);
+    } else {
+      courseModalTitle.textContent = 'New Course';
+      inputCode.value = '';
+      inputName.value = '';
+      selectLec.value = '';
+    }
+
+    courseModal.style.display = 'flex';
     modalBackdrop.classList.add('is-open');
   }
 
-  function closeModal() {
-    modal.style.display = 'none';
+  function closeCourseModal() {
+    courseModal.style.display = 'none';
+    modalBackdrop.classList.remove('is-open');
+    editingCourseId = null;
+  }
+
+  /* --------------------------- Roster Modal ------------------------- */
+
+  function openRosterModal() {
+    rosterModal.style.display = 'flex';
+    modalBackdrop.classList.add('is-open');
+  }
+
+  function closeRosterModal() {
+    rosterModal.style.display = 'none';
     modalBackdrop.classList.remove('is-open');
     clearRosterAlert();
     currentCourseId = null;
@@ -165,11 +199,7 @@
   }
 
   function renderRosterError(err) {
-    rosterBody.innerHTML =
-      `<div class="state">` +
-        `<div class="state__title">Could not load roster</div>` +
-        `<div>${esc(err.message)}</div>` +
-      `</div>`;
+    rosterBody.innerHTML = `<div class="state"><div class="state__title">Could not load roster</div><div>${esc(err.message)}</div></div>`;
   }
 
   function renderRoster(data) {
@@ -177,23 +207,18 @@
     rosterTitle.textContent = `${data.code} — ${data.name}`;
     rosterSub.textContent   = `Course #${data.course_id}`;
 
-    let lecturerHTML;
-    if (data.lecturer) {
-      lecturerHTML = `
-        <div class="card" style="box-shadow:none; margin-bottom:12px;">
-          <div class="card__body">
-            <div class="u-flex u-justify-between u-items-center">
-              <div>
-                <div><strong>${esc(data.lecturer.full_name)}</strong> ${roleBadge('Lecturer')}</div>
-                <div class="u-text-sm u-text-muted">${esc(data.lecturer.email)}</div>
-              </div>
-              ${statusBadge(data.lecturer.status)}
+    let lecturerHTML = data.lecturer ? `
+      <div class="card" style="box-shadow:none; margin-bottom:12px;">
+        <div class="card__body">
+          <div class="u-flex u-justify-between u-items-center">
+            <div>
+              <div><strong>${esc(data.lecturer.full_name)}</strong> ${roleBadge('Lecturer')}</div>
+              <div class="u-text-sm u-text-muted">${esc(data.lecturer.email)}</div>
             </div>
+            ${statusBadge(data.lecturer.status)}
           </div>
-        </div>`;
-    } else {
-      lecturerHTML = `<p class="u-text-muted">No lecturer assigned.</p>`;
-    }
+        </div>
+      </div>` : `<p class="u-text-muted">No lecturer assigned.</p>`;
 
     const activeStudents = data.students.filter(s => s.status === 'Active');
 
@@ -201,23 +226,9 @@
       ? `<div class="state">No students enrolled.</div>`
       : `<div class="table-wrap">
           <table class="table">
-            <thead><tr>
-              <th class="num">ID</th><th>Email</th><th>Name</th>
-              <th>Role</th><th>Enrollment</th><th>Enrolled</th>
-              <th style="text-align:right;">Actions</th>
-            </tr></thead>
+            <thead><tr><th class="num">ID</th><th>Email</th><th>Name</th><th>Role</th><th>Enrollment</th><th>Enrolled</th><th style="text-align:right;">Actions</th></tr></thead>
             <tbody>
-              ${activeStudents.map(s => {
-                // Chỉ cần nút Remove, không cần Restore
-                const actionBtns = `
-                  <button class="btn btn--danger btn--sm" type="button"
-                          data-action="remove-student"
-                          data-uid="${s.user_id}"
-                          data-email="${esc(s.email)}">
-                    Remove
-                  </button>`;
-
-                return `
+              ${activeStudents.map(s => `
                 <tr>
                   <td class="num">${s.user_id}</td>
                   <td>${esc(s.email)}</td>
@@ -225,25 +236,19 @@
                   <td>${roleBadge(s.role || 'Student')}</td>
                   <td>${statusBadge(s.status)}</td>
                   <td class="num">${esc(fmtDateTime(s.enrolled_at))}</td>
-                  <td class="u-text-right">${actionBtns}</td>
-                </tr>`;
-              }).join('')}
+                  <td class="u-text-right">
+                    <button class="btn btn--danger btn--sm" type="button" data-action="remove-student" data-uid="${s.user_id}" data-email="${esc(s.email)}">Remove</button>
+                  </td>
+                </tr>`).join('')}
             </tbody>
           </table>
         </div>`;
 
-    rosterBody.innerHTML =
-      `<div class="u-text-sm u-text-muted" style="text-transform:uppercase;
-                                                  letter-spacing:.06em;">
-         Lecturer
-       </div>
-       ${lecturerHTML}
-
-       <div class="u-text-sm u-text-muted u-mt-4" style="text-transform:uppercase;
-                                                        letter-spacing:.06em;">
-         ${activeStudents.length}
-       </div>
-       ${studentRows}`;
+    rosterBody.innerHTML = `
+      <div class="u-text-sm u-text-muted" style="text-transform:uppercase; letter-spacing:.06em;">Lecturer</div>
+      ${lecturerHTML}
+      <div class="u-text-sm u-text-muted u-mt-4" style="text-transform:uppercase; letter-spacing:.06em;">${activeStudents.length} Enrolled Students</div>
+      ${studentRows}`;
   }
 
   async function openRoster(courseId) {
@@ -251,12 +256,8 @@
     clearRosterAlert();
     rosterTitle.textContent = 'Course roster';
     rosterSub.textContent   = `Course #${courseId}`;
-    rosterBody.innerHTML =
-      `<div class="state">` +
-        `<span class="spinner" aria-hidden="true"></span>` +
-        `<div class="state__title u-mt-2">Loading roster…</div>` +
-      `</div>`;
-    openModal();
+    rosterBody.innerHTML    = `<div class="state"><span class="spinner"></span><div class="state__title u-mt-2">Loading roster…</div></div>`;
+    openRosterModal();
     await reloadRoster();
   }
 
@@ -271,13 +272,11 @@
     }
   }
 
-  /* -------------------- Add Student Modal Handlers ------------------ */
+  /* -------------------- Add Student Modal ------------------ */
 
   function openAddModal() {
-    if (document.body.dataset.role !== 'admin') return;
     addEmail.value = '';
     addError.hidden = true;
-    addError.textContent = '';
     addModal.style.display = 'flex';
     setTimeout(() => addEmail.focus(), 0);
   }
@@ -286,85 +285,87 @@
     addModal.style.display = 'none';
   }
 
+  /* ----------------------------- events ----------------------------- */
+
+  refreshBtn.addEventListener('click', load);
+  newCourseBtn.addEventListener('click', () => openCourseModal(null));
+  
+  courseModalClose.addEventListener('click', closeCourseModal);
+  courseModalCancel.addEventListener('click', closeCourseModal);
+  modalClose.addEventListener('click', closeRosterModal);
+  modalBackdrop.addEventListener('click', () => { closeCourseModal(); closeRosterModal(); });
+
   addBtn.addEventListener('click', openAddModal);
   addClose.addEventListener('click', closeAddModal);
   addCancel.addEventListener('click', closeAddModal);
 
-  // ============================================================
-  // ENFORCE BRs Ở FRONTEND (trước khi gọi API):
-  //   1. Email phải hợp lệ.
-  //   2. Không được trùng với sinh viên đã có enrollment Active.
-  //   3. Không được thêm user có role khác Student (nếu biết).
-  //   4. Không thể add chính mình nếu đang là Admin (defensive).
-  // ============================================================
+  // Handle Course Form Submit (Create / Edit)
+  courseForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    courseError.hidden = true;
+
+    const code = inputCode.value.trim();
+    const name = inputName.value.trim();
+    const lecturer_id = Number(selectLec.value);
+
+    if (!code) return showCourseError('Course code is required.');
+    if (!name) return showCourseError('Course name is required.');
+    if (!lecturer_id) return showCourseError('Please assign a lecturer.');
+
+    const payload = { code, name, lecturer_id };
+
+    courseSaveBtn.disabled = true;
+    try {
+      if (editingCourseId) {
+        await Api.put(`/api/admin/courses/${editingCourseId}`, payload);
+        showAlert('success', `Course "${code}" updated.`);
+      } else {
+        await Api.post('/api/admin/courses', payload);
+        showAlert('success', `Course "${code}" created.`);
+      }
+      closeCourseModal();
+      await load();
+    } catch (err) {
+      // Catch BR errors from backend (e.g., Duplicate code)
+      showCourseError(err.message);
+    } finally {
+      courseSaveBtn.disabled = false;
+    }
+  });
+
+  function showCourseError(msg) {
+    courseError.hidden = false;
+    courseError.textContent = msg;
+  }
+
+  // Handle Add Student Submit
   addForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     addError.hidden = true;
     const email = addEmail.value.trim().toLowerCase();
 
-    // BR-validate #1: format
-    if (!email || !email.includes('@')) {
-      addError.hidden = false;
-      addError.textContent = 'A valid email is required.';
-      return;
-    }
-
-    // BR-validate #2: trùng với enrollment Active hiện có
-    if (currentRoster && currentRoster.students) {
-      const dup = currentRoster.students.find(
-        s => s.email.toLowerCase() === email && s.status === 'Active'
-      );
-      if (dup) {
-        addError.hidden = false;
-        addError.textContent = `Student "${email}" is already enrolled in this course.`;
-        return;
-      }
-    }
-
-    // BR-validate #3: chặn nếu email là của Admin (không thể enroll Admin như Student)
-    //   → cần tra cứu nhanh account. Nếu backend chưa có endpoint tìm, bỏ qua check này.
-    try {
-      const lookup = await Api.get(`/api/admin/accounts?q=${encodeURIComponent(email)}`);
-      const match = lookup.users.find(u => u.email.toLowerCase() === email);
-      if (match && match.role !== 'Student') {
-        addError.hidden = false;
-        addError.textContent =
-          `"${email}" is a ${match.role}, not a Student. Only Student accounts can be enrolled.`;
-        return;
-      }
-      if (match && match.status === 'Disabled') {
-        addError.hidden = false;
-        addError.textContent = `"${email}" is disabled. Enable the account first.`;
-        return;
-      }
-    } catch (_e) {
-      // nếu endpoint lookup lỗi, không block — backend vẫn sẽ enforce
-    }
+    if (!email || !email.includes('@')) return showAddError('A valid email is required.');
 
     addSaveBtn.disabled = true;
     try {
-      await Api.post(`/api/admin/courses/${currentCourseId}/enrollments`, {
-        student_email: email
-      });
-
+      await Api.post(`/api/admin/courses/${currentCourseId}/enrollments`, { student_email: email });
       closeAddModal();
-      showRosterAlert('success', `Student "${email}" enrolled in this course. Student count updated.`);
+      showRosterAlert('success', `Student "${email}" enrolled.`);
       await reloadRoster();
       await load();
     } catch (err) {
-      addError.hidden = false;
-      addError.textContent = err.message;
+      showAddError(err.message);
     } finally {
       addSaveBtn.disabled = false;
     }
   });
 
-  /* ----------------------------- handlers --------------------------- */
+  function showAddError(msg) {
+    addError.hidden = false;
+    addError.textContent = msg;
+  }
 
-  refreshBtn.addEventListener('click', load);
-  modalClose.addEventListener('click', closeModal);
-  modalBackdrop.addEventListener('click', closeModal);
-
+  // Handle Table Actions (Roster, Edit, Delete, Remove Student)
   document.addEventListener('click', async (event) => {
     const rosterBtn = event.target.closest('button[data-action="view-roster"]');
     if (rosterBtn) {
@@ -372,23 +373,52 @@
       return;
     }
 
-    // ============================================================
-    // DELETE: Remove (soft) — set status='Removed'
-    // ============================================================
+    const editBtn = event.target.closest('button[data-action="edit-course"]');
+    if (editBtn) {
+      const cid = Number(editBtn.dataset.cid);
+      try {
+        const course = await Api.get(`/api/admin/courses`).then(d => d.courses.find(x => x.course_id === cid));
+        if (course) openCourseModal(course);
+      } catch (err) {
+        showAlert('danger', 'Failed to load course details: ' + err.message);
+      }
+      return;
+    }
+
+    const delBtn = event.target.closest('button[data-action="delete-course"]');
+    if (delBtn) {
+      const cid = Number(delBtn.dataset.cid);
+      const code = delBtn.dataset.code;
+      
+      const warningMsg = `WARNING: HARD DELETE\n\n` +
+                         `You are about to permanently delete the course "${code}".\n` +
+                         `This will PERMANENTLY DESTROY all enrolled students, quizzes, and student grades/attempts associated with this course.\n\n` +
+                         `This action CANNOT be undone. Are you absolutely sure?`;
+                         
+      if (!window.confirm(warningMsg)) return;
+
+      delBtn.disabled = true;
+      try {
+        await Api.del(`/api/admin/courses/${cid}`);
+        showAlert('success', `Course "${code}" and all associated data deleted.`);
+        await load();
+      } catch (err) {
+        showAlert('danger', err.message);
+        delBtn.disabled = false;
+      }
+      return;
+    }
+
     const removeBtn = event.target.closest('button[data-action="remove-student"]');
     if (removeBtn) {
       const uid = removeBtn.dataset.uid;
       const email = removeBtn.dataset.email;
-
-      if (!window.confirm(
-        `Remove "${email}" from this course?\n\n` +
-        `Their enrollment will be marked Removed. Past quiz attempts remain intact.`
-      )) return;
+      if (!window.confirm(`Remove "${email}" from this course?`)) return;
 
       removeBtn.disabled = true;
       try {
         await Api.del(`/api/admin/courses/${currentCourseId}/enrollments/${uid}`);
-        showRosterAlert('success', `Student "${email}" removed from this course. Student count updated.`);
+        showRosterAlert('success', `Student "${email}" removed.`);
         await reloadRoster();
         await load();
       } catch (err) {
