@@ -18,7 +18,7 @@ canned values from mock_data_us02.py.
 
 Run from the repository root:
 
-    python -m pytest src/tests/test_us02_student_sees_quizzes.py -v
+    python -m pytest tests/test_us02.py -v
 """
 
 from __future__ import annotations
@@ -26,13 +26,11 @@ from __future__ import annotations
 import pathlib
 import sys
 
-# Make sure the repo root and this test directory are importable,
-# regardless of how pytest is invoked (matches db/init_db.py's pattern).
-ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
+ROOT = pathlib.Path(__file__).resolve().parent.parent   # tests/ → repo root
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-THIS_DIR = pathlib.Path(__file__).resolve().parent
+THIS_DIR = pathlib.Path(__file__).resolve().parent      # tests/
 if str(THIS_DIR) not in sys.path:
     sys.path.insert(0, str(THIS_DIR))
 
@@ -87,12 +85,10 @@ def test_tc_us02_01_student_sees_available_and_overdue(monkeypatch):
 
     result = list_visible_quizzes("minhhd@univ.edu")
 
-    # All four quizzes are visible — both buckets are preserved.
     assert len(result) == 4
     assert sum(1 for q in result if q.availability == "available") == 2
     assert sum(1 for q in result if q.availability == "overdue")   == 2
 
-    # Titles and course codes pass through unchanged.
     titles = {q.title for q in result}
     assert "ACC101 Midterm Quiz"  in titles
     assert "ACC101 Overdue Quiz"  in titles
