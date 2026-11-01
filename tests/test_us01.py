@@ -14,20 +14,20 @@ functions that return the rows from `mock_data_us01.py`.
 
 Run from the repository root:
 
-    python -m pytest src/tests/test_us01_create_quiz.py -v
+    python -m pytest tests/test_us01.py -v
 """
 
 from __future__ import annotations
 
-# Make sure the repo root and this test directory are importable,
-# regardless of how pytest is invoked (matches db/init_db.py's pattern).
 import pathlib
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
+# tests/ → repo root (two levels up)
+ROOT = pathlib.Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+# tests/ (own directory — used for `import mock_data_us01`)
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 if str(THIS_DIR) not in sys.path:
     sys.path.insert(0, str(THIS_DIR))
