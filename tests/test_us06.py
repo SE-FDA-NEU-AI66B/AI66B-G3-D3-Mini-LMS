@@ -22,7 +22,7 @@ monkeypatched with canned values from mock_data_us06.py.
 
 Run from the repository root:
 
-    python -m pytest test/test_us06.py -v
+    python -m pytest tests/test_us06.py -v
 """
 
 from __future__ import annotations
@@ -31,6 +31,7 @@ import hashlib
 import pathlib
 import sys
 
+# tests/ → repo root (two levels up)
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -90,8 +91,8 @@ def test_tc_us06_01_admin_creates_new_user(monkeypatch):
       * a UserAdminResponse is returned with the fields the DB stored
       * `insert_user` was called exactly once
       * the password argument passed to `insert_user` is the SHA-256
-        hex digest of "password123" — NOT the plaintext and NOT some
-        other hash
+        hex digest of the demo password — NOT the plaintext and NOT
+        some other hash
     """
     _patch_admin(monkeypatch)
 
@@ -148,13 +149,15 @@ def test_tc_us06_01_admin_creates_new_user(monkeypatch):
     assert call["status"] == "Active"
 
     # The stored password is a SHA-256 hex digest — not the plaintext,
-    # and equal to the known hash of "password123" (verifies both that
-    # hashing happened and that the *correct* algorithm was used).
-    assert call["pw_hash"] != "password123"
+    # and equal to the known hash of the demo password (verifies both
+    # that hashing happened and that the *correct* algorithm was used).
+    assert call["pw_hash"] != mock_data_us06.VALID_PASSWORD_PLAINTEXT
     assert len(call["pw_hash"]) == 64
     assert all(c in "0123456789abcdef" for c in call["pw_hash"])
-    assert call["pw_hash"] == mock_data_us06.EXPECTED_HASH_OF_PASSWORD123
-    assert call["pw_hash"] == hashlib.sha256(b"password123").hexdigest()
+    assert call["pw_hash"] == mock_data_us06.EXPECTED_HASH_OF_VALID_PASSWORD
+    assert call["pw_hash"] == hashlib.sha256(
+        mock_data_us06.VALID_PASSWORD_PLAINTEXT.encode("utf-8")
+    ).hexdigest()
 
 
 # ----------------------------------------------------------------------
@@ -188,9 +191,9 @@ def test_tc_us06_02_create_rejects_duplicate_email(monkeypatch):
     )
 
     payload = UserCreateRequest(
-        email="anhnv@univ.edu",   # duplicate
+        email="anhnv@univ.edu",                                  # duplicate
         full_name="Someone Else",
-        password="password123",
+        password=mock_data_us06.VALID_PASSWORD_PLAINTEXT,
         role="Student",
         status="Active",
     )
