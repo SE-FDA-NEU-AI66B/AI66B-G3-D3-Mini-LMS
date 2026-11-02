@@ -1,4 +1,4 @@
-# Milestone 3
+# Mini-LMS — UI
 
 ## 1. P0 stories and status
 

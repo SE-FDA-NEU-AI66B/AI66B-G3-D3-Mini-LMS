@@ -270,3 +270,89 @@ Decompose the high-priority user stories into technical architecture and impleme
 | @Altimary | ✔ | ✔ | ✔ |
 | @BuiDut | ✔ | ✔ | ✔ |
 | @VizAnh | ✔ | ✔ | ✔ |
+
+
+## Sprint 4 - 19/10/2026 to 1/11/2026
+
+
+### Sprint goal
+Milestone 3 proved that people can use your app. Milestone 4 proves that it keeps working when you change it: every P0 story is checked by automated tests that a machine can run in seconds, after every change.
+
+### Mandatory Chore Issues
+
+| Issue | Người làm | Đã đóng? |
+|-------|-----------|----------|
+| [Chore] Refine backlog for Sprint 4 | @thangkaka26 (PO) | ✔ |
+| [Chore] Sprint 4 wrap-up | @VizAnh (SM) | ✔ |
+
+### Committed
+
+| Issue | Story | Points | Owner |
+|-------|-------|--------|-------|
+| #83   | #9    |    3   | @thangkaka26 |
+| #84   | #10   |    3   | @Altimary |
+| #85   | #11   |    3   | @BuiDut |
+| #86   | #12   |    3   | @VizAnh |
+| #87   | #14   |    3   | @thangkaka26 |
+| #88   | #17   |    3   | @Altimary |
+| #89   | #54   |    3   | @BuiDut |
+| #90   | #55   |    3   | @VizAnh |
+| #93   | #82   |    3   | @thangkaka26 |
+
+**Total committed: 53 points**
+
+### Result
+
+| Issue | Points | Status | If not done, why |
+|-------|--------|--------|------------------|
+| #83   |   3    | Done | |
+| #84   |   3    | Done | |
+| #85   |   3    | Done | |
+| #86   |   3    | Done | |
+| #87   |   3    | Done | |
+| #88   |   3    | Done | |
+| #89   |   3    | Done | |
+| #90   |   3    | Done | |
+| #93   |   3    | Done | |
+
+
+**Goal:** Tests for all P0 stories.   
+**Completed:** 27 points.  
+**Velocity:** 27  
+**Not finished:** None  
+**SM Sprint 5:** @thangkaka26
+
+### Sprint Review
+
+#### What we demonstrated:
+
+Tests for all P0 stories.
+
+#### Feedback received:
+The tests for P0 stories are worked that are ready for next technical implementation.
+
+#### Backlog changes as a result:
+Decompose the high-priority user stories into technical architecture and implementation task for the next
+
+## Retrospective
+
+| Keep doing | Stop doing | Start doing |
+|------------|------------|-------------|
+| Maintaining clear task delegation and effective cross-review | Merging documentation and finalizing exports right before the deadline | Deep testing & exception handling for features |
+| Keeping GitHub Project boards and branch naming standardized | Delaying reviews on open pull requests | Improve UI |
+
+**One concrete action for next sprint (with an owner):**
+
+<!-- A retro that produces no action item is a complaint session.
+     Exactly one action, one owner, checked at the next retro. -->
+
+- Handling remaining bugs and improve UI (PO: @thangkaka26)
+
+### Attendance
+
+| Member | Planning | Review | Retro |
+|--------|:----------:|:--------:|:-------:|
+| @thangkaka26 | ✔ | ✔ | ✔ |
+| @Altimary | ✔ | ✔ | ✔ |
+| @BuiDut | ✔ | ✔ | ✔ |
+| @VizAnh | ✔ | ✔ | ✔ |
