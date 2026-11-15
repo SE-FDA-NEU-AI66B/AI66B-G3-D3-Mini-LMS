@@ -1,23 +1,26 @@
 /* ==========================================================================
    Mini-LMS — shared layout renderer
    Served from: src/ui/js/layout.js
-   Version: v7-nav (added courses for student and lecturer)
+   Version: v8-nav
 
-   Approved changes:
+   Approved changes (accumulated):
      - Top bar renders the Logout button directly for non-guest roles.
      - Footer keeps only "Mini-LMS".
      - One-shot legacy footer cleanup (no observer — the observer is what
        caused a previous infinite loop; do NOT re-add it).
      - NAV hrefs point at the real static HTML pages instead of the
-       placeholder SPA paths. Admin sidebar now lists Accounts then
-       Courses, matching the post-login default landing page.
-     - Student and Lecturer sidebars now include "My Courses".
+       placeholder SPA paths.
+     - Student and Lecturer sidebars include "My Courses".
+     - v8-nav: removed the student "My results" nav entry. That link
+       pointed at `/results`, which does not exist (US07 is P1 and
+       not yet implemented). Clicking it 404'd. No page uses
+       data-active="results", so nothing else is affected.
    ========================================================================== */
 
 (function (global) {
   'use strict';
 
-  const LAYOUT_VERSION = 'v7-nav';
+  const LAYOUT_VERSION = 'v8-nav';
 
   /* ---------------------------------------------------------------- */
   /* One-shot legacy cleanup.                                          */
@@ -68,8 +71,9 @@
   };
 
   // NOTE: hrefs point to the actual static HTML files served by FastAPI
-  // under /ui/html. Only "My results" (/results) is still a placeholder —
-  // that is US07 and will be implemented in a later sprint.
+  // under /ui/html. The student "My results" entry has been removed — the
+  // page behind it (/results, US07) is P1 and not implemented, so the link
+  // would 404. Re-add the entry (and build the page) when US07 lands.
   const NAV = {
     guest: [],
     student: [
@@ -77,8 +81,6 @@
         icon: '<path d="M4 6h16M4 12h16M4 18h10"/>' },
       { id: 'courses',   label: 'My Courses', href: '/ui/html/student-courses.html',
         icon: '<path d="M12 4L4 8l8 4 8-4-8-4zM4 12l8 4 8-4M4 16l8 4 8-4"/>' },
-      { id: 'results',   label: 'My results', href: '/results',
-        icon: '<path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6"/>' },
     ],
     lecturer: [
       { id: 'courses', label: 'My Courses', href: '/ui/html/instructor-courses.html',
