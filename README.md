@@ -1,6 +1,20 @@
 # D3 - Educational Platform (Mini LMS)
+[![CI](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/actions/workflows/ci.yml)
+
+**Live URL**: <https://ai66b-g3-d3-mini-lms.onrender.com>  
+**Test accounts**: minhhd@univ.edu / lanpt@univ.edu / admin@univ.edu (all pass: `password123`)  
 
 Instructors create quizzes, students take them, and the system automatically grades the submissions and compiles class results.
+
+## P0 stories
+- [x] [[#9]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/9) US1 - Lecturer creates a quiz
+- [x] [[#10]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/10) US2 - Student sees available quizzes
+- [x] [[#11]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/11) US3 - Student takes a quiz with countdown timer
+- [x] [[#12]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/12) US4 - Automatic grading and immediate score
+- [x] [[#14]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/14) US5 - Lecturer publishes / unpublishes a quiz
+- [x] [[#17]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/17) US6 - Admin manages user accounts
+- [x] [[#54]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/54) US11 - Admin creates courses and assigns lecturers
+- [x] [[#55]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/55) US12 - Admin enrolls students into a course
 
 ## Team
 **AI66B - Group 3**:
@@ -19,32 +33,4 @@ Instructors create quizzes, students take them, and the system automatically gra
 |Sprint 2| @Altimary |
 |Sprint 3| @BuiDut |
 |Sprint 4| @VizAnh |
-|Sprint 5| |
-
-## Setup
-> Quick setup guide for Windows
-
-### Before testing:
-1. The main branch is cloned: https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS.git
-2. Let the connected postgreSQL database (w/ pgAdmin) running in background.
-3. Edit `.venv.example` that matches the properties of your local database.
-
-### Sequential commands run in IDE terminal
-```bash
-# Run once:
-python -m venv .venv
-pip install -r requirements.txt
-# Run when .env.example updates:
-copy .env.example .env
-# Run tests (terminal + browser).
-python db/init_db.py
-python db/verify_db.py
-python src/app.py
-```
-### Open these URLs when server is established
-→ Entry: http://localhost:8000/login (see `db/seed.sql.txt` for auth info)  
-→ APIs: http://localhost:8000/docs  
-→ Example API: http://localhost:8000/api/quizzes?email=minhhd@univ.edu  
-Not to open `0.0.0.0:8000` because it is the bind address, not a browsable host.
-
-> For detail setup guides for other OSs, see in `docs\SETUP.md`.
+|Sprint 5| @thangkaka26 |

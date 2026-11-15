@@ -339,7 +339,7 @@ Decompose the high-priority user stories into technical architecture and impleme
 | Keep doing | Stop doing | Start doing |
 |------------|------------|-------------|
 | Maintaining clear task delegation and effective cross-review | Merging documentation and finalizing exports right before the deadline | Deep testing & exception handling for features |
-| Keeping GitHub Project boards and branch naming standardized | Delaying reviews on open pull requests | Improve UI |
+| Keeping GitHub Project boards and branch naming standardized | Delaying reviews on open pull requests | Deploy as a web service |
 
 **One concrete action for next sprint (with an owner):**
 
@@ -347,6 +347,74 @@ Decompose the high-priority user stories into technical architecture and impleme
      Exactly one action, one owner, checked at the next retro. -->
 
 - Handling remaining bugs and improve UI (PO: @thangkaka26)
+
+### Attendance
+
+| Member | Planning | Review | Retro |
+|--------|:----------:|:--------:|:-------:|
+| @thangkaka26 | ✔ | ✔ | ✔ |
+| @Altimary | ✔ | ✔ | ✔ |
+| @BuiDut | ✔ | ✔ | ✔ |
+| @VizAnh | ✔ | ✔ | ✔ |
+
+
+## Sprint 5 - 2/11/2026 to 15/11/2026
+
+
+### Sprint goal
+The product: **one live URL**. Your software runs on the internet at a public `https://` address. A stranger opens it on a phone or a laptop and uses every P0 story, with nothing to install
+
+### Mandatory Chore Issues
+
+| Issue | Người làm | Đã đóng? |
+|-------|-----------|----------|
+| [Chore] Refine backlog for Sprint 5 | @thangkaka26 (PO) | ✔ |
+| [Chore] Sprint 5 wrap-up | @thangkaka26 (SM) | ✔ |
+
+### Committed
+
+| Issue | Story | Points | Owner |
+|-------|-------|--------|-------|
+| #107   | #106    |    5   | @thangkaka26 |
+| #111   | #106    |    3   | @thangkaka26 |
+
+
+**Total committed: 8 points**
+
+### Result
+
+| Issue | Points | Status | If not done, why |
+|-------|--------|--------|------------------|
+| #107   |   5    | Done | |
+| #111   |   3    | Done | |
+
+
+**Goal:** Deploy as a web service with public URL.   
+**Completed:** 8 points.  
+**Velocity:** 8  
+**Not finished:** None  
+**SM Sprint 5:** @thangkaka26
+
+### Sprint Review
+
+#### What we demonstrated:
+
+Deploy the project on Render with live URL.
+
+
+## Retrospective
+
+| Keep doing | Stop doing | Start doing |
+|------------|------------|-------------|
+| Maintaining clear task delegation and effective cross-review | Merging documentation and finalizing exports right before the deadline |  |
+| Keeping GitHub Project boards and branch naming standardized | Delaying reviews on open pull requests |  |
+
+**One concrete action for next sprint (with an owner):**
+
+<!-- A retro that produces no action item is a complaint session.
+     Exactly one action, one owner, checked at the next retro. -->
+
+- Close the project (PO: @thangkaka26)
 
 ### Attendance
 
