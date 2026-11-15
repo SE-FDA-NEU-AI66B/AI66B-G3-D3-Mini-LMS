@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini-LMS · Something went wrong</title>
+  <link rel="stylesheet" href="/ui/css/mini-lms.css" />
+</head>
+
+<!--
+  Rendered by app.py's psycopg.Error / Exception handlers when a
+  request fails in a way the service layer did not already wrap.
+
+  Deliberately does NOT load session.js: if /api/me is unreachable
+  (which is the common reason this page is being shown), session.js
+  would try to redirect to /login and loop. Only layout.js runs here,
+  and it has no dependency on any backend endpoint.
+-->
+<body
+  data-role="guest"
+  data-brand-sub="Error">
+
+  <div class="app-shell">
+    <div class="app-body">
+      <main class="app-main">
+        <div class="app-container" style="max-width:560px;">
+
+          <div class="card u-mt-6" style="text-align:center; padding:40px 20px;">
+
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none"
+                 stroke="var(--color-warning-fg)" stroke-width="2"
+                 aria-hidden="true"
+                 style="display:block; margin:0 auto 12px;">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 8v5M12 16.5v.01"/>
+            </svg>
+
+            <h1 class="page-title">Something went wrong</h1>
+
+            <p class="u-text-muted u-mt-4">
+              The service is temporarily unable to handle this request.
+              This usually means the database is unreachable or the
+              server is restarting.
+            </p>
+
+            <p class="u-text-muted u-text-sm">
+              Please wait a moment and try again. If the problem persists,
+              contact the system administrator.
+            </p>
+
+            <div class="u-mt-6 u-flex u-gap-2"
+                 style="justify-content:center; flex-wrap:wrap;">
+              <button class="btn btn--primary" type="button" id="retry-btn">
+                Try again
+              </button>
+              <a class="btn btn--ghost" href="/login">Back to login</a>
+            </div>
+
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/ui/js/layout.js"></script>
+  <script>
+    Layout.init();
+    document.getElementById('retry-btn').addEventListener('click', function () {
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>
