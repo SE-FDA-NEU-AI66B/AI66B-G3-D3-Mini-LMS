@@ -7,14 +7,14 @@
 Instructors create quizzes, students take them, and the system automatically grades the submissions and compiles class results.
 
 ## P0 stories
-- [x] [[Story] US1 - Lecturer creates a quiz #9](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/9)
-- [x] [[Story] US2 - Student sees available quizzes #10](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/10)
-- [x] [[Story] US3 - Student takes a quiz with countdown timer #11](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/11)
-- [x] [[Story] US4 - Automatic grading and immediate score #12](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/12)
-- [x] [[Story] US5 - Lecturer publishes / unpublishes a quiz #14](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/14)
-- [x] [[Story] US6 - Admin manages user accounts #17](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/17)
-- [x] [[Story] US11 - Admin creates courses and assigns lecturers #54](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/54)
-- [x] [[Story] US12 - Admin enrolls students into a course #55](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/55)
+- [x] [[#9]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/9) US1 - Lecturer creates a quiz
+- [x] [[#10]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/10) US2 - Student sees available quizzes
+- [x] [[#11]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/11) US3 - Student takes a quiz with countdown timer
+- [x] [[#12]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/12) US4 - Automatic grading and immediate score
+- [x] [[#14]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/14) US5 - Lecturer publishes / unpublishes a quiz
+- [x] [[#17]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/17) US6 - Admin manages user accounts
+- [x] [[#54]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/54) US11 - Admin creates courses and assigns lecturers
+- [x] [[#55]](https://github.com/SE-FDA-NEU-AI66B/AI66B-G3-D3-Mini-LMS/issues/55) US12 - Admin enrolls students into a course
 
 ## Team
 **AI66B - Group 3**:
